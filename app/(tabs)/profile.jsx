@@ -5,11 +5,11 @@ import React, { useEffect, useState } from 'react'
 
 
 const Profile = () => {
-
+ 
 
   return (
     <SafeAreaView style={{ backgroundColor:'#fff'}}>
-      <Text>Profile</Text>
+      <Text>Profile test</Text>
     </SafeAreaView>
   )
 }
