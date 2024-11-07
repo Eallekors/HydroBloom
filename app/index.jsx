@@ -7,7 +7,9 @@ export default function Index() {
   return (
     <SafeAreaView>
       <Text>Hello world!</Text>
-      <Button title="Tabs" onPress={() => router.push('(tabs)/home')} />
+      <Button title="Login" onPress={() => router.push('/Auth/login')} />
+      <Button title="Sign up" onPress={() => router.push('/Auth/signup')} />
+    
     </SafeAreaView>
   );
 }
