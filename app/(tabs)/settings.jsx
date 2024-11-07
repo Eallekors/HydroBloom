@@ -9,7 +9,7 @@ const Profile = () => {
 
   return (
     <SafeAreaView style={{ backgroundColor:'#fff'}}>
-      <Text>Profile test</Text>
+      <Text>Settings</Text>
     </SafeAreaView>
   )
 }
