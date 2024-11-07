@@ -42,10 +42,10 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: "absolute", 
-    left: 20,
+    left: 0,
   },
   logoutButton: {
     position: "absolute",
-    right: 20,
+    right: 0,
   },
 });
