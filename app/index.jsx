@@ -1,8 +1,10 @@
+
 import { SafeAreaView, Text, Image, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import Container from "../components/Container.jsx";
 import CenteredButton from "../components/Button.jsx";
 import { LinearGradient } from "expo-linear-gradient";
+
 
 export default function Index() {
   const navigateToSignUp = () => {
@@ -13,6 +15,7 @@ export default function Index() {
   }
   
   return (
+
     <SafeAreaView style={styles.safeArea}>
       <LinearGradient
         colors={['#83D2F6', '#D9F5FF', '#83D2F6']}
@@ -72,3 +75,4 @@ const styles = StyleSheet.create({
     marginBottom: 50
   }
 });
+
