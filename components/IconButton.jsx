@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, Text, View, StyleSheet, Image } from 'react-native';
 
-export default function IconButton({ title, onPress, icon, style, textStyle, dropdownItems }) {
+export default function IconButton({ title, onPress, icon, style, textStyle, dropdownItems, onOptionSelect }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState({ title, icon }); // State to hold selected option
+  const [selectedOption, setSelectedOption] = useState({ title, icon });
 
-  // Function to toggle dropdown open/close
   const toggleDropdown = () => setIsOpen(!isOpen);
 
-  // Function to handle option selection
   const handleOptionSelect = (item) => {
-    setSelectedOption(item);  // Update the selected option
-    setIsOpen(false);         // Close the dropdown
+    setSelectedOption(item);
+    setIsOpen(false);
+    
+    // Call the onOptionSelect function passed from the parent and pass the selected option
+    onOptionSelect(title, item); // Pass the button title and selected item to the parent
   };
 
   return (
@@ -39,12 +40,17 @@ export default function IconButton({ title, onPress, icon, style, textStyle, dro
               ]}
               onPress={() => handleOptionSelect(item)} // Select an option
             >
-              <View style={styles.dropTextContainer}>
+              <View
+                style={[
+                  styles.dropTextContainer,
+                  selectedOption.title === item.title && { backgroundColor: '#EBEBEB' }, // Change container background color
+                ]}
+              >
                 <Text
                   style={[
                     styles.buttonText,
                     textStyle,
-                    selectedOption.title === item.title && { color: '#fff' }, // Change text color for selected option
+                    selectedOption.title === item.title && { color: 'black' }, // Change text color for selected option
                   ]}
                 >
                   {item.title}
@@ -65,18 +71,24 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderBottomLeftRadius: 25,
     height: 58,
-    width: '100%',
+    width: '95%',  // Changed width to 90%
     overflow: 'hidden',
-    elevation: 11,
+    elevation: 5,
+    alignSelf: 'center',
+    marginVertical: 5,
+    
   },
   dropButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-end',
     borderRadius: 5,
     height: 58,
-    width: '100%',
+    width: '90%',
     overflow: 'hidden',
-    elevation: 11,
+    elevation: 5,
+    marginRight: 10,
+    
   },
   iconContainer: {
     backgroundColor: '#FFFFFF',
@@ -87,6 +99,7 @@ const styles = StyleSheet.create({
     width: 58,
     justifyContent: 'center',
     alignItems: 'center',
+    
   },
   icon: {
     width: '75%',
@@ -107,6 +120,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
+    
   },
   dropTextContainer: {
     backgroundColor: '#FFFFFF',
@@ -123,6 +137,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    
   },
   buttonText: {
     color: '#000',
@@ -130,13 +147,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   dropdownContainer: {
+    flexDirection: 'column',
     marginTop: 10,
+    marginBottom: 10,
+    justifyContent: 'space-between', // Distribute items with space between them
+    gap: 10,  // Optional: Can also add a gap for consistent spacing if 'justifyContent' isn't enough
   },
   dropdownButton: {
     marginBottom: 5,
   },
-  // Style for the selected option
-  selectedOption: {
-    backgroundColor: '#007BFF',  // Background color for selected option
-  },
+  
 });
