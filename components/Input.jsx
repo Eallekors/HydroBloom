@@ -63,6 +63,7 @@ export default function Input({
           value={value}
           onChange={(item) => onChangeText(item.value)}
           style={[styles.dropdown, style]}
+          placeholderStyle={styles.placeholderStyle}
         />
       ) : type === "time" ? (
         <View style={styles.inputContainer}>
@@ -180,4 +181,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#007AFF",
   },
+  placeholderStyle: {
+    color: '#999',
+    fontSize: 16,
+  }
 });
