@@ -1,19 +1,45 @@
-import React, { useState } from 'react';
-import { TouchableOpacity, Text, View, StyleSheet, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { TouchableOpacity, Text, View, Image, StyleSheet } from 'react-native';
 
-export default function IconButton({ title, onPress, icon, style, textStyle, dropdownItems, onOptionSelect }) {
+export default function IconButton({
+  title,
+  onPress,
+  icon,
+  style,
+  textStyle,
+  dropdownItems,
+  onOptionSelect,
+  defaultSelected // Added defaultSelected prop
+}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState({ title, icon });
+  const [selectedOption, setSelectedOption] = useState({ title: defaultSelected, icon }); // Set initial state with defaultSelected
 
-  const toggleDropdown = () => setIsOpen(!isOpen);
+  // Function to handle dropdown toggle, but only if dropdownItems exist
+  const toggleDropdown = () => {
+    if (dropdownItems && dropdownItems.length > 0) {
+      setIsOpen(!isOpen);  // Only toggle dropdown if there are items
+    } else {
+      onPress && onPress();  // If no dropdownItems, just trigger onPress
+    }
+  };
 
   const handleOptionSelect = (item) => {
     setSelectedOption(item);
     setIsOpen(false);
-    
+
     // Call the onOptionSelect function passed from the parent and pass the selected option
     onOptionSelect(title, item); // Pass the button title and selected item to the parent
   };
+
+  // Optionally, you can use an effect to update the selectedOption when dropdownItems or defaultSelected change
+  useEffect(() => {
+    if (dropdownItems && dropdownItems.length > 0) {
+      const defaultItem = dropdownItems.find(item => item.title === defaultSelected);
+      if (defaultItem) {
+        setSelectedOption(defaultItem);
+      }
+    }
+  }, [dropdownItems, defaultSelected]);
 
   return (
     <View>
@@ -29,7 +55,7 @@ export default function IconButton({ title, onPress, icon, style, textStyle, dro
       </TouchableOpacity>
 
       {/* Dropdown Buttons */}
-      {isOpen && (
+      {isOpen && dropdownItems && dropdownItems.length > 0 && (
         <View style={styles.dropdownContainer}>
           {dropdownItems.map((item, index) => (
             <TouchableOpacity

@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     marginVertical: 67 ,  
     borderRadius: 25,
     height: height * 0.75, 
-    minHeight: 200,
+    minHeight: 100,
     maxHeight: 650,
     // For iOS shadow
     shadowColor: '#000',
