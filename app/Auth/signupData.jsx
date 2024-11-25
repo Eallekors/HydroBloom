@@ -7,33 +7,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import CenteredButton from '../../components/Button';
 import Input from '../../components/Input';
 import { BackHandler } from 'react-native';
+import { saveUserData as saveToAppWrite } from '../../services/appWrite';
+import { getSession } from '../../services/appWrite';
 
 export default function SignUpScreenData() {
-    useEffect(() => {
-        const backAction = () => {
-          // Disable back navigation
-          return true;
-        };
-    
-        const backHandler = BackHandler.addEventListener(
-          "hardwareBackPress",
-          backAction
-        );
-    
-        return () => backHandler.remove();
-      }, []);
-    
-    const genderOptions = [
-    { id: 1, label: "Male", value: "1" },
-    { id: 2, label: "Female", value: "2" }
-  ];
-  const activityOptions = [
-    { id: 1, label: "Sedentary", value: "1" },
-    { id: 2, label: "Lightly active", value: "2" },
-    { id: 3, label: "Moderately active", value: "3" },
-    { id: 4, label: "Very active", value: "4" }
-  ];
-
   const [formData, setFormData] = useState({
     name: '',
     gender: '',
@@ -43,6 +20,45 @@ export default function SignUpScreenData() {
     wakeTime: '',
     sleepTime: ''
   });
+  
+  const [loading, setLoading] = useState(false);
+  const [authenticatedUserId, setAuthenticatedUserId] = useState(null);
+
+  useEffect(() => {
+    const backAction = () => {
+      // Disable back navigation
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    // Fetch user session to get userId
+    const fetchUserSession = async () => {
+      const session = await getSession();
+      if (session) {
+        setAuthenticatedUserId(session.userId);
+      }
+    };
+    
+    fetchUserSession();
+
+    return () => backHandler.remove();
+  }, []);
+
+  const genderOptions = [
+    { id: 1, label: "Male", value: "male" },
+    { id: 2, label: "Female", value: "female" }
+  ];
+
+  const activityOptions = [
+    { id: 1, label: "Sedentary", value: "sedentary" },
+    { id: 2, label: "Lightly active", value: "lightlyActive" },
+    { id: 3, label: "Moderately active", value: "moderatelyActive" },
+    { id: 4, label: "Very active", value: "veryActive" }
+  ];
 
   const isFormValid = () => {
     return Object.values(formData).every((field) => field !== '');
@@ -55,13 +71,63 @@ export default function SignUpScreenData() {
     }));
   };
 
-  const handleSubmit = () => {
+  const calculateWaterIntake = (weight, activityLevel) => {
+    let baseWaterIntake = weight * 30;
+  
+    // Adjust intake based on activity level
+    switch (activityLevel) {
+      case 'sedentary':
+        return Math.round(baseWaterIntake);
+      case 'lightlyActive':
+        return Math.round(baseWaterIntake * 1.1);
+      case 'moderatelyActive':
+        return Math.round(baseWaterIntake * 1.2);
+      case 'veryActive':
+        return Math.round(baseWaterIntake * 1.4);
+      default:
+        return Math.round(baseWaterIntake);
+    }
+  };
+  
+  const handleSubmit = async () => {
     if (!isFormValid()) {
       Alert.alert('Error', 'Please fill in all fields correctly.');
       return;
     }
-    router.push('/home');
+  
+    if (!authenticatedUserId) {
+      Alert.alert('Error', 'User is not authenticated.');
+      return;
+    }
+  
+    setLoading(true);
+  
+    try {
+      const weightInKg = parseFloat(formData.weight);
+      const waterIntake = calculateWaterIntake(weightInKg, formData.activity);
+  
+      const userData = {
+        name: formData.name,
+        gender: formData.gender,
+        weight: weightInKg,
+        age: parseInt(formData.age, 10),
+        activityLevel: formData.activity,
+        wakeUpTime: formData.wakeTime,
+        sleepTime: formData.sleepTime,
+        userId: authenticatedUserId,
+        waterIntake: waterIntake
+      };
+  
+      await saveToAppWrite(userData);
+      router.push('/home'); 
+    } catch (error) {
+      Alert.alert('Error', `Failed to save your data: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
+  
+  
 
   return (
     <View style={styles.safeArea}>
@@ -94,7 +160,6 @@ export default function SignUpScreenData() {
               placeholder="Insert your weight"
               type="number"
               onChangeText={(value) => {
-                // Allow empty value when the user deletes input
                 if (value === '') {
                   handleInputChange('weight', '');
                 } else {
@@ -142,10 +207,10 @@ export default function SignUpScreenData() {
             />
           </ScrollView>
           <CenteredButton
-            title="Continue"
+            title={loading ? 'Saving...' : 'Continue'}
             onPress={handleSubmit}
             style={styles.button}
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || loading}
           />
         </Container>
       </LinearGradient>

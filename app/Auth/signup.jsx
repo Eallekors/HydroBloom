@@ -6,26 +6,31 @@ import Header from '../../components/Header';
 import { LinearGradient } from 'expo-linear-gradient';
 import CenteredButton from '../../components/Button';
 import Input from '../../components/Input';
+import { account, ID } from '../../services/appWrite'; 
 
 export default function SignUpScreen() {
-  const [emailInput, setEmailInput] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [emailInput, setEmailInput] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Validate email format using regex
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
+  // Validate password strength
   const validatePassword = (password) => {
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return passwordRegex.test(password);
   };
 
+  // Show error alerts
   const showErrorAlert = (message) => {
-    Alert.alert("Error", message, [{ text: "OK" }]);
+    Alert.alert('Error', message, [{ text: 'OK' }]);
   };
 
+  // Handle sign-up process
   const handleSignUp = async () => {
     if (!emailInput || !password || !confirmPassword) {
       showErrorAlert("All fields are required.");
@@ -49,9 +54,25 @@ export default function SignUpScreen() {
       return;
     }
 
-    router.push('/Auth/signupData');
+    try {
+      // Step 1: Create the user
+      const response = await account.create(ID.unique(), emailInput, password);
+      console.log('User created:', response);
+
+      // Step 2: Create a session using email and password
+      const session = await account.createEmailPasswordSession(emailInput, password);
+      console.log('Session created:', session);
+
+      // Step 3: Redirect to the next screen after successful sign-up and login
+      router.push('/Auth/signupData');
+
+    } catch (error) {
+      console.error('Error during sign-up or session creation:', error);
+      showErrorAlert("Error creating account or logging in. Please try again.");
+    }
   };
 
+  // Navigate to the sign-in screen
   const navigateToSignIn = () => {
     router.push('/Auth/login');
   };
@@ -83,7 +104,7 @@ export default function SignUpScreen() {
           />
           <Input
             label="Confirm your password"
-            placeholder="Password"
+            placeholder="Confirm your password"
             isPassword={true}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -105,7 +126,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 18,
     marginBottom: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   gradientContainer: {
     flex: 1,
@@ -115,6 +136,6 @@ const styles = StyleSheet.create({
     width: 120,
   },
   container: {
-    height: "100%",
+    height: '100%',
   },
 });

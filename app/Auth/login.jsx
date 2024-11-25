@@ -6,6 +6,7 @@ import Header from '../../components/Header';
 import { LinearGradient } from 'expo-linear-gradient';
 import CenteredButton from '../../components/Button';
 import Input from '../../components/Input';
+import { account } from '../../services/appWrite';
 
 export default function SignInScreen() {
   const [emailInput, setEmailInput] = useState("");
@@ -25,20 +26,28 @@ export default function SignInScreen() {
       showErrorAlert("All fields are required.");
       return;
     }
-
+  
     if (!validateEmail(emailInput)) {
       showErrorAlert("Please enter a valid email address.");
       return;
     }
-
-    // TODO: Implement actual login logic
-    Alert.alert("Success", "Logged in successfully.");
-    router.push('/home');
+  
+    try {
+      // Attempt to sign in with Appwrite
+      const response = await account.createEmailPasswordSession(emailInput, password);
+      console.log('User signed in:', response);
+      router.push('/home'); 
+    } catch (error) {
+        showErrorAlert("Invalid credentials. Please try again.");
+      return; 
+    }
   };
+  
 
   const navigateToForgotPassword = () => {
     router.push('/Auth/forgotPassword');
   };
+
   const handleBackPress = () => {
     router.replace('/');
   };
@@ -52,7 +61,7 @@ export default function SignInScreen() {
         style={styles.gradientContainer}
       >
         <Container style={styles.container}>
-          <Header title="Sign In" showBack={true} onBackPress={handleBackPress}/>
+          <Header title="Sign In" showBack={true} onBackPress={handleBackPress} />
           <View style={{ height: 20 }} />
           <Input
             label="E-mail"
