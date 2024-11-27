@@ -11,8 +11,10 @@ import {
 } from 'react-native';
 import { BackHandler } from 'react-native';
 import { getUserData } from '../../services/appWrite';
+import { useRouter } from 'expo-router';
 
 const Home = () => {
+  const router = useRouter(); 
   // Handle hardware back press to prevent going back
   useEffect(() => {
     const backAction = () => {
@@ -48,7 +50,7 @@ const Home = () => {
   }, []);
 
   const handlePress = () => {
-    console.log('Drink button pressed');
+    router.push('(tabs)/addWater');
   };
 
   return (

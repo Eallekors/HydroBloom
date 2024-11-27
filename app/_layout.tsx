@@ -14,7 +14,7 @@ export default function RootLayout() {
       
           <Stack.Screen name="Auth/login" />
           <Stack.Screen name="Auth/signup" />
-        
+          <Stack.Screen name="(tabs)/addWater" />
       
     </Stack>
   );
