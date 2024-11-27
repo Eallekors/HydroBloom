@@ -1,0 +1,6 @@
+[
+    { "icon": "water-bottle.png", "title": "Water", "defaultSelected": "500ml" },
+    { "icon": "juice-bottle.png", "title": "Juice", "defaultSelected": "300ml" },
+    { "icon": "coffe-glass.png", "title": "Coffee", "defaultSelected": "Small" }
+  ]
+ 

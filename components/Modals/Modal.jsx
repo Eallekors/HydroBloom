@@ -1,10 +1,11 @@
 import React from 'react';
-import {Modal,View,Text,StyleSheet,TouchableOpacity,FlatList} from 'react-native';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import IconButton from '../IconButton';
 import Container from '../Container';
 import Header from '../Header';
 
-const SelectableModal = ({visible,onClose,buttons,onSelect,onAdd,onDelete}) => {
+const SelectableModal = ({ visible, onClose, data, onSelect, onAdd, onDelete }) => {
+  
   return (
     <Modal
       animationType="slide"
@@ -14,21 +15,31 @@ const SelectableModal = ({visible,onClose,buttons,onSelect,onAdd,onDelete}) => {
     >
       <View style={styles.modalOverlay}>
         <Container style={styles.modalContent}>
-          <Header title='Select Item to Drink' showBack={true} onBackPress={() => {onClose()}}/>
+          <Header
+            title="Select Item to Drink"
+            showBack={true}
+            onBackPress={onClose}
+          />
           {/* List of Buttons */}
+          
           <FlatList
-            data={buttons}
+            data={data}
             renderItem={({ item, index }) => (
               <IconButton
-            title="Water Bottle"
-            defaultSelected="500ml"
-            onPress={() => {onSelect(index); onClose();}}
-            icon={require('../../assets/icons/water-bottle.png')}
-           />
+                title={item.title} // Dynamically set the title
+                defaultSelected={item.defaultSelected} // Dynamically set the default selection
+                onPress={() => {
+                  onSelect(index);
+                  onClose();
+                }}
+                icon={item.icon} // Dynamically set the icon
+              />
             )}
             keyExtractor={(item, index) => index.toString()}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No items to display</Text>
+            }
           />
-
           {/* + and - Buttons */}
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.circleButton} onPress={onAdd}>
@@ -54,17 +65,14 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '90%',
     backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
   },
-  button: {
-    padding: 15,
-    backgroundColor: '#007bff',
-    borderRadius: 5,
-    marginVertical: 5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
+  emptyText: {
     textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#888',
   },
   actionButtons: {
     flexDirection: 'row',

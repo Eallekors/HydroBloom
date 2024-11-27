@@ -38,7 +38,7 @@ const Profile = () => {
       <IconButton
             title="Click Me 1"
             onPress={() => console.log('Button pressed')}
-            icon={require('../../assets/icons/ruler.png')}
+            icon='ruler'
             dropdownItems={dropdownItems}
             onOptionSelect={handleOptionSelect}  // Pass callback to child
           />

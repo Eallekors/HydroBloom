@@ -14,6 +14,13 @@ export default function IconButton({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState({ title: defaultSelected, icon }); // Set initial state with defaultSelected
 
+  const iconMapping = {
+    'water-bottle.png': require('../assets/icons/water-bottle.png'),
+    'juice-bottle.png': require('../assets/icons/water-bottle.png'),
+    'coffe-glass.png': require('../assets/icons/water-glass.png'),
+    'ruler': require('../assets/icons/ruler.png')
+    // Add more icons as your data changes or expands
+  };
   // Function to handle dropdown toggle, but only if dropdownItems exist
   const toggleDropdown = () => {
     if (dropdownItems && dropdownItems.length > 0) {
@@ -40,13 +47,19 @@ export default function IconButton({
       }
     }
   }, [dropdownItems, defaultSelected]);
+  console.log(icon);
+
+  // Dynamically require the image based on the icon name passed
+  const getIconSource = (iconName) => {
+    return iconMapping[iconName] || require('../assets/icons/x.jpg'); // Default icon in case of missing mapping
+  };
 
   return (
     <View>
       {/* Main Button */}
       <TouchableOpacity style={[styles.button, style]} onPress={toggleDropdown}>
         <View style={styles.iconContainer}>
-          <Image source={icon} style={styles.icon} />
+          <Image source={getIconSource(icon)} style={styles.icon} />
         </View>
         <View style={styles.textContainer}>
           <Text style={[styles.buttonText, textStyle]}>{title}</Text>

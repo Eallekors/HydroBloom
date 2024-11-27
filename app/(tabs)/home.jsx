@@ -3,16 +3,16 @@ import { Text, View, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimen
 import SelectableModal from '../../components/Modals/Modal';
 import AddWaterModal from '../../components/Modals/AddModal';
 import Container from '../../components/Container'; // Import the Container component
+import buttonsData from '../../data/contrainers.json'; // Import JSON data
 
 const { height, width } = Dimensions.get('window'); // Get screen dimensions here
 
 const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
-  const [buttons, setButtons] = useState(['Water', 'Juice', 'Coffee']);
+  const [buttons, setButtons] = useState(buttonsData); // Initialize state with imported data
   const [selectedButton, setSelectedButton] = useState(null);
 
-  const containerRef = useRef(null); // Reference to the container for height calculation
   const [containerHeight, setContainerHeight] = useState(0);
 
   const toggleModal = () => setModalVisible(!modalVisible);
@@ -31,28 +31,20 @@ const Home = () => {
     toggleAddModal();
   };
 
-  // Set the container height when it is laid out
-  useLayoutEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.measure((x, y, width, height) => {
-        setContainerHeight(height);
-      });
-    }
-  }, []);
-
   return (
     <ImageBackground
       source={require('../../assets/icons/home.png')}
       style={styles.safeArea}
     >
       {/* Container with total height */}
-      <Container ref={containerRef} style={styles.container}>
-      <Text style={styles.containerText}>
+      <Container style={styles.container}>
+        <Text style={styles.containerText}>
           Total Height: <Text style={styles.containerStats}>{containerHeight}px</Text>
         </Text>
         <Text style={styles.containerText}>
           Day Streak: <Text style={styles.containerStats}>{containerHeight}px</Text>
-        </Text></Container>
+        </Text>
+      </Container>
 
       {/* Main content */}
       
@@ -64,7 +56,7 @@ const Home = () => {
       {/* Modals */}
       <SelectableModal
         visible={modalVisible}
-        buttons={buttons}
+        data={buttons}
         onClose={toggleModal}
         onSelect={(index) => setSelectedButton(index)}
         onAdd={toggleAddModal}
