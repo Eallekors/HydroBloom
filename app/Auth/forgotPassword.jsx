@@ -6,11 +6,9 @@ import Header from '../../components/Header';
 import { LinearGradient } from 'expo-linear-gradient';
 import CenteredButton from '../../components/Button';
 import Input from '../../components/Input';
-import { account } from '../../services/appWrite';
 
-export default function SignInScreen() {
+export default function ForgotPasswordScreen() {
   const [emailInput, setEmailInput] = useState("");
-  const [password, setPassword] = useState("");
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -21,35 +19,32 @@ export default function SignInScreen() {
     Alert.alert("Error", message, [{ text: "OK" }]);
   };
 
-  const handleSignIn = async () => {
-    if (!emailInput || !password) {
-      showErrorAlert("All fields are required.");
+  const handlePasswordReset = async () => {
+    if (!emailInput) {
+      showErrorAlert("Email is required.");
       return;
     }
-  
+
     if (!validateEmail(emailInput)) {
       showErrorAlert("Please enter a valid email address.");
       return;
     }
-  
-    try {
-      // Attempt to sign in with Appwrite
-      const response = await account.createEmailPasswordSession(emailInput, password);
-      console.log('User signed in:', response);
-      router.push('/home'); 
-    } catch (error) {
-        showErrorAlert("Invalid credentials. Please try again.");
-      return; 
-    }
-  };
-  
 
-  const navigateToForgotPassword = () => {
-    router.push('/Auth/forgotPassword');
+    // Simulate a check for email existence
+    const emailExists = true; 
+
+    if (!emailExists) {
+      showErrorAlert("This email doesn't exist.");
+      return;
+    }
+
+    // TODO: Implement password reset logic
+    Alert.alert("Success", "A reset link has been sent to your email.");
+    router.push('/Auth/login'); 
   };
 
   const handleBackPress = () => {
-    router.replace('/');
+    router.back();
   };
 
   return (
@@ -61,28 +56,19 @@ export default function SignInScreen() {
         style={styles.gradientContainer}
       >
         <Container style={styles.container}>
-          <Header title="Sign In" showBack={true} onBackPress={handleBackPress} />
+          <Header title="Forgot Password" showBack={true} onBackPress={handleBackPress} />
           <View style={{ height: 20 }} />
           <Input
-            label="E-mail"
+            label="We will send you a new password to your email."
             placeholder="Insert your e-mail"
             type="email"
             value={emailInput}
             onChangeText={setEmailInput}
           />
-          <Input
-            label="Password"
-            placeholder="Enter your password"
-            isPassword={true}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <CenteredButton title="Log In" onPress={handleSignIn} style={styles.button} />
-          <Text style={styles.text}>Forgot your password?</Text>
           <CenteredButton
-            title="Reset Password"
-            onPress={navigateToForgotPassword}
-            style={styles.button2}
+            title="Request Password"
+            onPress={handlePasswordReset}
+            style={styles.button}
           />
         </Container>
       </LinearGradient>
@@ -94,22 +80,12 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  text: {
-    textAlign: 'center',
-    fontSize: 18,
-    marginBottom: 20,
-    fontWeight: "bold",
-  },
   gradientContainer: {
     flex: 1,
   },
   button: {
-    marginBottom: 25,
-    width: 120
-  },
-  button2: {
-    marginBottom: 25,
-    width: 170,
+    marginTop: 25,
+    width: 200,
   },
   container: {
     height: "100%",
