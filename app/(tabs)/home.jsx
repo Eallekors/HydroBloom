@@ -74,7 +74,7 @@ const Home = () => {
     setButtons((prevButtons) => [...prevButtons, newButton]); // Add new button to the state
     
   };
-  console.log(buttons);
+  //console.log(buttons);
   return (
     <View style={styles.view}>
       <ImageBackground

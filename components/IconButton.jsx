@@ -18,7 +18,10 @@ export default function IconButton({
     'water-bottle.png': require('../assets/icons/water-bottle.png'),
     'juice-bottle.png': require('../assets/icons/juice-bottle.png'),
     'coffe-glass.png': require('../assets/icons/water-glass.png'),
-    'ruler': require('../assets/icons/ruler.png')
+    'ruler': require('../assets/icons/ruler.png'),
+    'clock': require('../assets/icons/time.png'),
+    'notif': require('../assets/icons/notification.png'),
+    'data': require('../assets/icons/data.png'),
     // Add more icons as your data changes or expands
   };
   // Function to handle dropdown toggle, but only if dropdownItems exist
