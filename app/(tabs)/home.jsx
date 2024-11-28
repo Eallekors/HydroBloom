@@ -1,50 +1,43 @@
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimensions } from 'react-native';
 import SelectableModal from '../../components/Modals/Modal';
 import AddWaterModal from '../../components/Modals/AddModal';
 import Container from '../../components/Container'; // Import the Container component
 import buttonsData from '../../data/contrainers.json'; // Import JSON data
+import DeleteModal from '../../components/Modals/DeleteModal';
 
 const { height, width } = Dimensions.get('window'); // Get screen dimensions here
 
 const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [buttons, setButtons] = useState(buttonsData); // Initialize state with imported data
   const [selectedButton, setSelectedButton] = useState(null);
 
-  const [containerHeight, setContainerHeight] = useState(0);
-
   const toggleModal = () => setModalVisible(!modalVisible);
   const toggleAddModal = () => setAddModalVisible(!addModalVisible);
+  const toggleDeleteModal = () => setDeleteModalVisible(!deleteModalVisible);
 
   const deleteButton = () => {
-    if (selectedButton !== null) {
-      setButtons((prev) => prev.filter((_, index) => index !== selectedButton));
-      setSelectedButton(null);
-      toggleModal();
-    }
+    toggleDeleteModal(); // Open the DeleteModal
   };
 
-  const addButton = (newButton) => {
-    setButtons((prev) => [...prev, newButton]);
-    toggleAddModal();
+  const addButton = () => {
+    toggleAddModal(); // Open the AddModal
   };
 
+  const handleAddNewButton = (newButton) => {
+    setButtons((prevButtons) => [...prevButtons, newButton]); // Add new button to the state
+    
+  };
+  console.log(buttons);
   return (
     <ImageBackground
       source={require('../../assets/icons/home.png')}
       style={styles.safeArea}
     >
-      {/* Container with total height */}
-      <Container style={styles.container}>
-        <Text style={styles.containerText}>
-          Total Height: <Text style={styles.containerStats}>{containerHeight}px</Text>
-        </Text>
-        <Text style={styles.containerText}>
-          Day Streak: <Text style={styles.containerStats}>{containerHeight}px</Text>
-        </Text>
-      </Container>
+    
 
       {/* Main content */}
       
@@ -58,14 +51,22 @@ const Home = () => {
         visible={modalVisible}
         data={buttons}
         onClose={toggleModal}
-        onSelect={(index) => setSelectedButton(index)}
-        onAdd={toggleAddModal}
+        onSelect={(item) => setSelectedButton(item) }
+        onAdd={addButton}
         onDelete={deleteButton}
       />
+      
       <AddWaterModal
         visible={addModalVisible}
         onClose={toggleAddModal}
-        onSave={addButton}
+        onSave={handleAddNewButton} // Pass handleAddNewButton to AddWaterModal to add a new button
+      />
+
+      <DeleteModal
+        visible={deleteModalVisible}
+        initialData={buttons}
+        onClose={toggleDeleteModal}
+        onDelete={(updatedData) => setButtons(updatedData)}
       />
     </ImageBackground>
   );

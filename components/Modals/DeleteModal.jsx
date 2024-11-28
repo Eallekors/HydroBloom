@@ -1,14 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import IconButton from '../IconButton';
 import Container from '../Container';
 import Header from '../Header';
 
-const SelectableModal = ({ visible, onClose, data, onSelect, onAdd, onDelete }) => {
+const DeleteModal = ({ visible, onClose, initialData, onSelect, onAdd, onDelete }) => {
+    // Use state to manage the data list
+    const [data, setData] = useState(initialData);
+
+    useEffect(() => {
+      setData(initialData); // Update the data when `initialData` changes
+    }, [initialData]);
   
+
+    const handleDelete = (index) => {
+      // Remove the item at the specified index
+      const updatedData = data.filter((_, i) => i !== index);
+      setData(updatedData);
+      onClose();
+      // Optionally call a parent handler to notify the change
+      if (onDelete) {
+        onDelete(updatedData);
+        
+      }
+    };
   return (
     <Modal
-      animationType="slide"
+      animationType="none"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
@@ -16,7 +34,7 @@ const SelectableModal = ({ visible, onClose, data, onSelect, onAdd, onDelete }) 
       <View style={styles.modalOverlay}>
         <Container style={styles.modalContent}>
           <Header
-            title="Select Item to Drink"
+            title="Select Item to Delete"
             showBack={true}
             onBackPress={onClose}
           />
@@ -28,10 +46,7 @@ const SelectableModal = ({ visible, onClose, data, onSelect, onAdd, onDelete }) 
               <IconButton
                 title={item.title} // Dynamically set the title
                 defaultSelected={item.defaultSelected} // Dynamically set the default selection
-                onPress={() => {
-                  onSelect(item);
-                  onClose();
-                }}
+                onPress={() => handleDelete(index)} // Call the delete handler
                 icon={item.icon} // Dynamically set the icon
               />
             )}
@@ -40,15 +55,7 @@ const SelectableModal = ({ visible, onClose, data, onSelect, onAdd, onDelete }) 
               <Text style={styles.emptyText}>No items to display</Text>
             }
           />
-          {/* + and - Buttons */}
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.circleButton} onPress={onAdd}>
-              <Text style={styles.circleButtonText}>+</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.circleButton} onPress={onDelete}>
-              <Text style={styles.circleButtonText}>-</Text>
-            </TouchableOpacity>
-          </View>
+         
         </Container>
       </View>
     </Modal>
@@ -100,4 +107,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SelectableModal;
+export default DeleteModal;

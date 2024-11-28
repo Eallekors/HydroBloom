@@ -7,17 +7,50 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
+  Image,
 } from 'react-native';
 
-const AddWaterModal = ({ visible, onClose }) => {
+const AddWaterModal = ({ visible, onClose, onSave }) => {
+  const [name, setName] = useState('');
+  const [amount, setAmount] = useState(''); // This will store the numeric input
   const [selectedIcon, setSelectedIcon] = useState(null);
 
-  const icons = ['💧', '🥤', '🍶', '☕', '🍵']; // Example icons
+  // Mapping of icon names to actual image files
+  const iconMapping = {
+    'water-bottle.png': require('../../assets/icons/water-bottle.png'),
+    'juice-bottle.png': require('../../assets/icons/juice-bottle.png'),
+    'coffe-glass.png': require('../../assets/icons/water-glass.png'),
+    'glass-glass.png': require('../../assets/icons/water-glass.png'),
+    
+    // Add more icons as your data changes or expands
+  };
+
+  const icons = Object.keys(iconMapping); // Get the keys (icon names) from the mapping
 
   const handleSave = () => {
-    // Add save functionality here
-    console.log('Save pressed!');
+    if (!name || !amount || !selectedIcon) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    // Save the amount as a number for calculations (without "ml")
+    const newButton = {
+      title: name,
+      defaultSelected: parseInt(amount)+"ml", // Store as a number
+      icon: selectedIcon, // Store the selected icon's name
+    };
+
+    // Call onSave prop to add the new button to the parent component
+    onSave(newButton);
+
+    // Close the modal
     onClose();
+  };
+
+  const handleAmountChange = (text) => {
+    // Remove non-numeric characters, and set the amount (as number) for calculations
+    const numericValue = text.replace(/[^0-9]/g, '');
+    setAmount(numericValue);
   };
 
   return (
@@ -37,7 +70,12 @@ const AddWaterModal = ({ visible, onClose }) => {
           {/* Name Input */}
           <View style={styles.formRow}>
             <Text style={styles.label}>Name:</Text>
-            <TextInput style={styles.textInput} placeholder="Enter name" />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Enter name"
+              value={name}
+              onChangeText={setName}
+            />
           </View>
 
           {/* Amount Input */}
@@ -47,13 +85,19 @@ const AddWaterModal = ({ visible, onClose }) => {
               <Text style={styles.infoButtonText}>ℹ️</Text>
             </TouchableOpacity>
           </View>
-          <TextInput style={styles.textInput} placeholder="Enter amount in ml" keyboardType="numeric" />
+          <TextInput
+            style={styles.textInput}
+            placeholder="Enter amount in ml"
+            keyboardType="numeric"
+            value={amount} // Display the numeric value with "ml"
+            onChangeText={handleAmountChange} // Handle input changes
+          />
 
           {/* Icon Selection */}
           <Text style={[styles.label, styles.iconLabel]}>Choose Icon:</Text>
           <FlatList
             horizontal
-            data={icons}
+            data={icons} // Use the icon keys
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[
@@ -62,16 +106,21 @@ const AddWaterModal = ({ visible, onClose }) => {
                 ]}
                 onPress={() => setSelectedIcon(item)}
               >
-                <Text style={styles.icon}>{item}</Text>
+                <Image source={iconMapping[item]} style={styles.iconImage} />
               </TouchableOpacity>
             )}
             keyExtractor={(item, index) => index.toString()}
-            contentContainerStyle={styles.iconContainer}
+            contentContainerStyle={styles.iconList}
           />
 
           {/* Save Button */}
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
             <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+
+          {/* Close Button */}
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.closeButtonText}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -82,20 +131,15 @@ const AddWaterModal = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: 'white',
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    borderRadius: 10,
+    width: '80%',
   },
   header: {
     marginBottom: 20,
@@ -110,65 +154,65 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '500',
+    marginBottom: 5,
   },
   textInput: {
-    height: 40,
-    borderColor: '#ddd',
     borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
     borderRadius: 5,
-    paddingHorizontal: 10,
-    marginTop: 5,
-  },
-  infoButton: {
-    marginLeft: 10,
-  },
-  infoButtonText: {
-    fontSize: 16,
-    color: '#007bff',
   },
   spaceBetween: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
   },
   iconLabel: {
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 10,
   },
-  iconContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  iconList: {
+    marginBottom: 15,
+    justifyContent: 'center', // Centers icons horizontally
+    alignItems: 'center', // Centers icons vertically
+    flexDirection: 'row', // Keeps icons in a row
   },
   iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    marginHorizontal: 10,
+    padding: 20, // Increased padding to make the clickable area larger
+    borderWidth: 1,
+    borderRadius: 50,
+    borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    marginHorizontal: 5,
   },
   selectedIconCircle: {
-    borderColor: '#007bff',
-    backgroundColor: '#e6f0ff',
+    backgroundColor: '#3498db',
+    borderColor: '#3498db',
   },
   icon: {
-    fontSize: 18,
+    fontSize: 60, // Increased font size for larger icons
   },
   saveButton: {
-    marginTop: 20,
-    backgroundColor: '#007bff',
+    backgroundColor: '#3498db',
+    padding: 15,
     borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignSelf: 'center',
+    alignItems: 'center',
   },
   saveButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
+  closeButton: {
+    padding: 15,
+    marginTop: 10,
+    backgroundColor: '#e74c3c',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 });
+
 
 export default AddWaterModal;

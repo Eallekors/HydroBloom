@@ -16,7 +16,7 @@ export default function IconButton({
 
   const iconMapping = {
     'water-bottle.png': require('../assets/icons/water-bottle.png'),
-    'juice-bottle.png': require('../assets/icons/water-bottle.png'),
+    'juice-bottle.png': require('../assets/icons/juice-bottle.png'),
     'coffe-glass.png': require('../assets/icons/water-glass.png'),
     'ruler': require('../assets/icons/ruler.png')
     // Add more icons as your data changes or expands
@@ -47,7 +47,7 @@ export default function IconButton({
       }
     }
   }, [dropdownItems, defaultSelected]);
-  console.log(icon);
+ 
 
   // Dynamically require the image based on the icon name passed
   const getIconSource = (iconName) => {
