@@ -118,8 +118,8 @@ export default function SignUpScreenData() {
         waterIntake: waterIntake
       };
   
-      await saveToAppWrite(userData);
-      router.push('/home'); 
+      await updateAppWrite(userData);//Create updateAppWrite to update personal data
+      router.push('/(tabs)/settings'); 
     } catch (error) {
       Alert.alert('Error', `Failed to save your data: ${error.message}`);
     } finally {

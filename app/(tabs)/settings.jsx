@@ -13,7 +13,6 @@ const Settings = () => {
     Units: null,
     "Clock format": null,
     Notifications: null,
-    "Personal Data": null,
   });
 
   // Function to handle option selection
@@ -96,7 +95,7 @@ const Settings = () => {
             />
             <IconButton
               title="Personal Data"
-              onPress={() => router.push('../settingsData')}
+              onPress={() => router.push('../PersonalData')}
               icon='data'
               selectedOption={selectedOptions['Personal Data']}  // Pass selected option for this button
             />
