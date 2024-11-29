@@ -5,61 +5,61 @@ import Container from '../Container';
 import Header from '../Header';
 
 const DeleteModal = ({ visible, onClose, initialData, onSelect, onAdd, onDelete }) => {
-    // Use state to manage the data list
     const [data, setData] = useState(initialData);
 
     useEffect(() => {
       setData(initialData); // Update the data when `initialData` changes
     }, [initialData]);
   
-
     const handleDelete = (index) => {
       // Remove the item at the specified index
       const updatedData = data.filter((_, i) => i !== index);
       setData(updatedData);
+
+      // Close the modal after deletion
       onClose();
-      // Optionally call a parent handler to notify the change
+
+      // Notify the parent component of the deletion (by calling onDelete with updated data)
       if (onDelete) {
         onDelete(updatedData);
-        
       }
     };
-  return (
-    <Modal
-      animationType="none"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalOverlay}>
-        <Container style={styles.modalContent}>
-          <Header
-            title="Select Item to Delete"
-            showBack={true}
-            onBackPress={onClose}
-          />
-          {/* List of Buttons */}
-          
-          <FlatList
-            data={data}
-            renderItem={({ item, index }) => (
-              <IconButton
-                title={item.title} // Dynamically set the title
-                defaultSelected={item.defaultSelected} // Dynamically set the default selection
-                onPress={() => handleDelete(index)} // Call the delete handler
-                icon={item.icon} // Dynamically set the icon
-              />
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>No items to display</Text>
-            }
-          />
-         
-        </Container>
-      </View>
-    </Modal>
-  );
+
+    return (
+      <Modal
+        animationType="none"
+        transparent={true}
+        visible={visible}
+        onRequestClose={onClose}
+      >
+        <View style={styles.modalOverlay}>
+          <Container style={styles.modalContent}>
+            <Header
+              title="Select Item to Delete"
+              showBack={true}
+              onBackPress={onClose}
+            />
+            
+            {/* List of Buttons */}
+            <FlatList
+              data={data}
+              renderItem={({ item, index }) => (
+                <IconButton
+                  title={item.title} // Dynamically set the title
+                  defaultSelected={item.defaultSelected} // Dynamically set the default selection
+                  onPress={() => handleDelete(index)} // Call the delete handler
+                  icon={item.icon} // Dynamically set the icon
+                />
+              )}
+              keyExtractor={(item, index) => index.toString()}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>No items to display</Text>
+              }
+            />
+          </Container>
+        </View>
+      </Modal>
+    );
 };
 
 const styles = StyleSheet.create({

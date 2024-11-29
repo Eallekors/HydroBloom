@@ -5,7 +5,8 @@ export const appwriteConfig = {
   endpoint: "https://cloud.appwrite.io/v1",
   projectId: "66f95858003215b653db",
   databaseId: "673c58c60017ad6cca00",
-  personalDataCollectionId: "673c59070032c19adaec"
+  personalDataCollectionId: "673c59070032c19adaec",
+  buttonsCollectionId: "674963ff00254cb063b3"
 };
 
 // Initialize Appwrite client and services
@@ -119,7 +120,7 @@ export const getUserData = async () => {
 
     // Fetch the current user from the session
     const currentAccount = await account.get();
-    console.log('Current Account:', currentAccount);
+    //console.log('Current Account:', currentAccount);
 
     // Fetch user data from the collection
     const currentUserData = await databases.listDocuments(
@@ -128,16 +129,99 @@ export const getUserData = async () => {
       [Query.equal('userId', currentAccount.$id)]
     );
 
-    console.log('Fetched User Data:', currentUserData);
+   // console.log('Fetched User Data:', currentUserData);
 
     if (currentUserData.documents.length === 0) {
       throw new Error('User data not found in the database.');
     }
 
-    return currentUserData.documents[0];
+    return currentUserData;
   } catch (error) {
     console.error('Error fetching user data:', error);
     throw new Error(`Failed to fetch user data: ${error.message}`);
+  }
+};
+
+export const ensureDocumentExists = async (userId) => {
+  try {
+    // Query the collection for the userId
+    const response = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.buttonsCollectionId,
+      [Query.equal('userId', userId)]
+    );
+
+    if (response.total === 0) {
+      // No document found, create a new one
+      const buttons = [
+        JSON.stringify({ defaultSelected: "500ml", icon: "water-bottle.png", title: "Water" }),
+        JSON.stringify({ defaultSelected: "300ml", icon: "juice-bottle.png", title: "Juice" }),
+        JSON.stringify({ defaultSelected: "280ml", icon: "coffe-glass.png", title: "Coffee" })
+      ];
+      
+      const newDocument = await databases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.buttonsCollectionId,
+        ID.unique(),
+        {
+          userId: userId,
+          buttons: buttons // Pass the serialized array
+        }
+      );
+      console.log("Document created:", newDocument);
+      return newDocument;
+    } else {
+     // console.log("Document already exists:", response.documents[0]);
+      return response.documents[0];
+    }
+  } catch (error) {
+    console.error("Error ensuring document exists:", error);
+    throw error;
+  }
+};
+
+export const updateAppwriteDocument = async (newButton, documentId, buttons) => {
+  try {
+    // Make sure the buttons array is updated with the new button
+    const updatedButtons = [...buttons, newButton];
+    
+    // Convert the button objects to strings (since the current Appwrite structure stores them as JSON strings)
+    const buttonsAsString = updatedButtons.map(button => JSON.stringify(button));
+    
+    console.log('Updated buttons to be sent:', buttonsAsString);  // Log the data to check
+    
+    // Update the document in Appwrite with the new buttons array
+    const response = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      '674963ff00254cb063b3', // Collection ID
+      documentId,              // Document ID (valid UID, confirmed as '6749754300074eeabd5f')
+      { buttons: buttonsAsString }  // Correct data structure (array of JSON strings)
+    );
+    
+    console.log("Document updated successfully:", response); // Log success response
+  } catch (error) {
+    console.error("Error updating document:", error); // Log the error
+  }
+};
+
+export const deleteAppwriteDocument = async (newButtons, documentId) => {
+  try {
+    // Convert the button objects to strings (since the current Appwrite structure stores them as JSON strings)
+    const buttonsAsString = newButtons.map(button => JSON.stringify(button));
+    
+    console.log('Updated buttons to be sent:', buttonsAsString);  // Log the data to check
+    
+    // Update the document in Appwrite with the new buttons array
+    const response = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      '674963ff00254cb063b3', // Collection ID
+      documentId,              // Document ID (valid UID, confirmed as '6749754300074eeabd5f')
+      { buttons: buttonsAsString }  // Correct data structure (array of JSON strings)
+    );
+    
+    console.log("Button deleted successfully:", response); // Log success response
+  } catch (error) {
+    console.error("Error deleting document:", error); // Log the error
   }
 };
 
