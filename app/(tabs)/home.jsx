@@ -1,18 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Text,
-  View,
-  Alert,
-  ActivityIndicator,
-  StyleSheet,
-  ImageBackground,
-  Image,
-  Pressable
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Text, View, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimensions, ActivityIndicator, Pressable } from 'react-native';
+import SelectableModal from '../../components/Modals/Modal';
+import AddWaterModal from '../../components/Modals/AddModal';
+import Container from '../../components/Container'; // Import the Container component
+import buttonsData from '../../data/contrainers.json'; // Import JSON data
+import DeleteModal from '../../components/Modals/DeleteModal';
 import { BackHandler } from 'react-native';
 import { getUserData } from '../../services/appWrite';
 
+const { height, width } = Dimensions.get('window'); // Get screen dimensions here
+
 const Home = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [buttons, setButtons] = useState(buttonsData); // Initialize state with imported data
+  const [selectedButton, setSelectedButton] = useState(null);
+
+  const toggleModal = () => setModalVisible(!modalVisible);
+  const toggleAddModal = () => setAddModalVisible(!addModalVisible);
+  const toggleDeleteModal = () => setDeleteModalVisible(!deleteModalVisible);
+
+
+
+
   // Handle hardware back press to prevent going back
   useEffect(() => {
     const backAction = () => {
@@ -51,6 +62,19 @@ const Home = () => {
     console.log('Drink button pressed');
   };
 
+  const deleteButton = () => {
+    toggleDeleteModal(); // Open the DeleteModal
+  };
+
+  const addButton = () => {
+    toggleAddModal(); // Open the AddModal
+  };
+
+  const handleAddNewButton = (newButton) => {
+    setButtons((prevButtons) => [...prevButtons, newButton]); // Add new button to the state
+    
+  };
+  console.log(buttons);
   return (
     <View style={styles.view}>
       <ImageBackground
@@ -93,18 +117,35 @@ const Home = () => {
               <Text style={styles.text}>
                 xxx ml to go
               </Text>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.drinkButton,
-                  { opacity: pressed ? 0.9 : 1 }
-                ]}
-                onPress={handlePress}
-              >
-                <Image
-                  source={require('../../assets/images/drinkIcon.png')}
-                  style={styles.drinkIcon}
-                />
-              </Pressable>
+              
+                {/* Circle Button */}
+      <TouchableOpacity style={styles.drinkButton} onPress={toggleModal}>
+        <Image style={styles.icon} source={require('../../assets/icons/water-glass.png')} />
+      </TouchableOpacity>
+
+      {/* Modals */}
+      <SelectableModal
+        visible={modalVisible}
+        data={buttons}
+        onClose={toggleModal}
+        onSelect={(item) => setSelectedButton(item) }
+        onAdd={addButton}
+        onDelete={deleteButton}
+      />
+      
+      <AddWaterModal
+        visible={addModalVisible}
+        onClose={toggleAddModal}
+        onSave={handleAddNewButton} // Pass handleAddNewButton to AddWaterModal to add a new button
+      />
+
+      <DeleteModal
+        visible={deleteModalVisible}
+        initialData={buttons}
+        onClose={toggleDeleteModal}
+        onDelete={(updatedData) => setButtons(updatedData)}
+      />
+              
             </View>
           )
         )}
@@ -219,5 +260,6 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   }
 });
+
 
 export default Home;

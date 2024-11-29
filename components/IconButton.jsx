@@ -1,18 +1,57 @@
-import React, { useState } from 'react';
-import { TouchableOpacity, Text, View, StyleSheet, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { TouchableOpacity, Text, View, Image, StyleSheet } from 'react-native';
 
-export default function IconButton({ title, onPress, icon, style, textStyle, dropdownItems, onOptionSelect }) {
+export default function IconButton({
+  title,
+  onPress,
+  icon,
+  style,
+  textStyle,
+  dropdownItems,
+  onOptionSelect,
+  defaultSelected // Added defaultSelected prop
+}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState({ title, icon });
+  const [selectedOption, setSelectedOption] = useState({ title: defaultSelected, icon }); // Set initial state with defaultSelected
 
-  const toggleDropdown = () => setIsOpen(!isOpen);
+  const iconMapping = {
+    'water-bottle.png': require('../assets/icons/water-bottle.png'),
+    'juice-bottle.png': require('../assets/icons/juice-bottle.png'),
+    'coffe-glass.png': require('../assets/icons/water-glass.png'),
+    'ruler': require('../assets/icons/ruler.png')
+    // Add more icons as your data changes or expands
+  };
+  // Function to handle dropdown toggle, but only if dropdownItems exist
+  const toggleDropdown = () => {
+    if (dropdownItems && dropdownItems.length > 0) {
+      setIsOpen(!isOpen);  // Only toggle dropdown if there are items
+    } else {
+      onPress && onPress();  // If no dropdownItems, just trigger onPress
+    }
+  };
 
   const handleOptionSelect = (item) => {
     setSelectedOption(item);
     setIsOpen(false);
-    
+
     // Call the onOptionSelect function passed from the parent and pass the selected option
     onOptionSelect(title, item); // Pass the button title and selected item to the parent
+  };
+
+  // Optionally, you can use an effect to update the selectedOption when dropdownItems or defaultSelected change
+  useEffect(() => {
+    if (dropdownItems && dropdownItems.length > 0) {
+      const defaultItem = dropdownItems.find(item => item.title === defaultSelected);
+      if (defaultItem) {
+        setSelectedOption(defaultItem);
+      }
+    }
+  }, [dropdownItems, defaultSelected]);
+ 
+
+  // Dynamically require the image based on the icon name passed
+  const getIconSource = (iconName) => {
+    return iconMapping[iconName] || require('../assets/icons/x.jpg'); // Default icon in case of missing mapping
   };
 
   return (
@@ -20,7 +59,7 @@ export default function IconButton({ title, onPress, icon, style, textStyle, dro
       {/* Main Button */}
       <TouchableOpacity style={[styles.button, style]} onPress={toggleDropdown}>
         <View style={styles.iconContainer}>
-          <Image source={icon} style={styles.icon} />
+          <Image source={getIconSource(icon)} style={styles.icon} />
         </View>
         <View style={styles.textContainer}>
           <Text style={[styles.buttonText, textStyle]}>{title}</Text>
@@ -29,7 +68,7 @@ export default function IconButton({ title, onPress, icon, style, textStyle, dro
       </TouchableOpacity>
 
       {/* Dropdown Buttons */}
-      {isOpen && (
+      {isOpen && dropdownItems && dropdownItems.length > 0 && (
         <View style={styles.dropdownContainer}>
           {dropdownItems.map((item, index) => (
             <TouchableOpacity
