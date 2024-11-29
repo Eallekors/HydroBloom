@@ -98,18 +98,45 @@ export async function getCurrentUser() {
 
 export const saveUserData = async (userData) => {
   try {
-    const response = await databases.createDocument(
+    // Get the current user's account ID
+    const currentAccount = await account.get();
+
+    // Fetch the existing user data from the database using the account ID
+    const userDocuments = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.personalDataCollectionId,
-      ID.unique(),
-      userData 
+      [Query.equal('userId', currentAccount.$id)]
     );
-    console.log('User data saved:', response);
+
+    if (userDocuments.documents.length > 0) {
+      // Update the existing document
+      const userDocumentId = userDocuments.documents[0].$id;
+      const updatedUserData = await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.personalDataCollectionId,
+        userDocumentId,
+        userData
+      );
+      console.log('User data updated:', updatedUserData);
+    } else {
+      // Create a new document if no data exists
+      const response = await databases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.personalDataCollectionId,
+        ID.unique(),
+        {
+          ...userData,
+          userId: currentAccount.$id
+        }
+      );
+      console.log('User data saved:', response);
+    }
   } catch (error) {
-    console.error('Error saving user data:', error);
-    throw new Error('Failed to save user data');
+    console.error('Error saving/updating user data:', error);
+    throw new Error('Failed to save or update user data');
   }
 };
+
 export const getUserData = async () => {
   try {
     const session = await getSession();
