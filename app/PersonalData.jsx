@@ -27,13 +27,13 @@ export default function PersonalData() {
       try {
         const userData = await getUserData();
         setFormData({
-          name: userData.name || '',
-          gender: userData.gender || '',
-          weight: userData.weight?.toString() || '',
-          age: userData.age?.toString() || '',
-          activityLevel: userData.activityLevel || '',
-          wakeUpTime: userData.wakeUpTime || '',
-          sleepTime: userData.sleepTime || ''
+          name: userData.documents[0].name || '',
+          gender: userData.documents[0].gender || '',
+          weight: userData.documents[0].weight?.toString() || '',
+          age: userData.documents[0].age?.toString() || '',
+          activityLevel: userData.documents[0].activityLevel || '',
+          wakeUpTime: userData.documents[0].wakeUpTime || '',
+          sleepTime: userData.documents[0].sleepTime || ''
         });
       } catch (error) {
         Alert.alert('Error', `Failed to fetch user data: ${error.message}`);
