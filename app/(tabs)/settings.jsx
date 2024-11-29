@@ -1,50 +1,54 @@
-import { Text, View, FlatList, StyleSheet, Alert } from 'react-native';
+import { Text, View, StyleSheet, Alert, ScrollView } from 'react-native';
 import IconButton from "../../components/IconButton.jsx";
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import Container from '../../components/Container.jsx';
 import Header from '../../components/Header.jsx';
 import { account } from '../../services/appWrite';
 import { router } from 'expo-router';
 
-const Profile = () => {
-  // Define a state to hold the selected options
-  const [selectedOptions, setSelectedOptions] = useState([]);
+const Settings = () => {
+  // Define a state to hold the selected option for each button by title
+  const [selectedOptions, setSelectedOptions] = useState({
+    Units: null,
+    "Clock format": null,
+    Notifications: null,
+  });
 
+  // Function to handle option selection
   const handleOptionSelect = (buttonTitle, selectedOption) => {
     console.log(`Selected from ${buttonTitle}: ${selectedOption.title}`);
     
-    // Update the state with the selected option
-    setSelectedOptions((prev) => [
-      ...prev,
-      { buttonTitle, selectedOption },
-    ]);
+    // Update the selected option for the specific button
+    setSelectedOptions((prevState) => ({
+      ...prevState,
+      [buttonTitle]: selectedOption.title,  // Update the selected option for the specific button
+    }));
   };
+  console.log(selectedOptions)
+  // Define the dropdown items for each button
+  const unitItems = [
+    { title: 'kg, ml' },
+    { title: 'lb, oz' }
+  ];
 
-  const dropdownItems = [
-    {
-      title: 'Option 1',
-      onPress: () => alert('Option 1 selected'),
-    },
-    {
-      title: 'Option 2',
-      onPress: () => alert('Option 2 selected'),
-    },
-    {
-      title: 'Option 3',
-      onPress: () => alert('Option 3 selected'),
-    },
+  const clockItems = [
+    { title: '13:00' },
+    { title: '1 PM' }
+  ];
+
+  const notifItems = [
+    { title: 'OFF' },
+    { title: 'Every 2 hours' },
+    { title: 'Every 4 hours' },
+    { title: 'Every 6 hours' }
   ];
 
   // Log out function
   const handleLogout = async () => {
     try {
-    
-      await account.deleteSession('current'); 
-
-      // Redirect to the sign-in screen
-      router.push('/Auth/login'); 
-
+      await account.deleteSession('current');
+      router.push('/Auth/login');
       console.log("Logged out successfully.");
     } catch (error) {
       console.error("Error logging out:", error);
@@ -62,44 +66,61 @@ const Profile = () => {
       >
         <Container style={styles.container}>
           <Header title="Settings" showLogout={true} onLogout={handleLogout} />
-          <View style={{ height: 20 }} />
-          <IconButton
-            title="Click Me 1"
-            onPress={() => console.log('Button pressed')}
-            icon='ruler'
-            dropdownItems={dropdownItems}
-            onOptionSelect={handleOptionSelect} 
-          />
+          
+          {/* Wrap the content inside ScrollView to make it scrollable */}
+          <ScrollView style={styles.scrollContainer}>
+            <IconButton
+              title="Units"
+              onPress={() => console.log('Button pressed')}
+              icon='ruler'
+              dropdownItems={unitItems}
+              onOptionSelect={handleOptionSelect}
+              selectedOption={selectedOptions['Units']}  // Pass selected option for this button
+            />
+            <IconButton
+              title="Clock format"
+              onPress={() => console.log('Button pressed')}
+              icon='clock'
+              dropdownItems={clockItems}
+              onOptionSelect={handleOptionSelect}
+              selectedOption={selectedOptions['Clock format']}  // Pass selected option for this button
+            />
+            <IconButton
+              title="Notifications"
+              onPress={() => console.log('Button pressed')}
+              icon='notif'
+              dropdownItems={notifItems}
+              onOptionSelect={handleOptionSelect}
+              selectedOption={selectedOptions['Notifications']}  // Pass selected option for this button
+            />
+            <IconButton
+              title="Personal Data"
+              onPress={() => router.push('../PersonalData')}
+              icon='data'
+              selectedOption={selectedOptions['Personal Data']}  // Pass selected option for this button
+            />
+          </ScrollView>
         </Container>
       </LinearGradient>
     </View>
   );
 };
 
+// Define your styles
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  text: {
-    textAlign: 'center',
-    fontSize: 18,
-    marginBottom: 20,
-    fontWeight: "bold",
-  },
   gradientContainer: {
-    flex: 1,
-  },
-  button: {
-    marginBottom: 25,
-    width: 120
-  },
-  button2: {
-    marginBottom: 25,
-    width: 170,
+    flex: 1,  // Make sure the gradient takes full screen height
   },
   container: {
-    height: "100%",
+    flex: 1, // Ensures the container expands to fill available space
+    padding: 20, // Adds padding to the container
+  },
+  scrollContainer: {
+    flex: 1, // Ensure the ScrollView fills the available space
   },
 });
 
-export default Profile;
+export default Settings;
