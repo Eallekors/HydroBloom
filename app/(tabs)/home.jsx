@@ -3,10 +3,9 @@ import { Text, View, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimen
 import SelectableModal from '../../components/Modals/Modal';
 import AddWaterModal from '../../components/Modals/AddModal';
 import Container from '../../components/Container'; // Import the Container component
-import buttonsData from '../../data/contrainers.json'; // Import JSON data
 import DeleteModal from '../../components/Modals/DeleteModal';
 import { BackHandler } from 'react-native';
-import { getUserData } from '../../services/appWrite';
+import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument } from '../../services/appWrite';
 
 const { height, width } = Dimensions.get('window'); // Get screen dimensions here
 
@@ -14,7 +13,7 @@ const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [buttons, setButtons] = useState(buttonsData); // Initialize state with imported data
+  const [buttons, setButtons] = useState([]); // Initialize state with imported data
   const [selectedButton, setSelectedButton] = useState(null);
 
   const toggleModal = () => setModalVisible(!modalVisible);
@@ -41,13 +40,15 @@ const Home = () => {
 
   const [waterIntake, setWaterIntake] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [usersId, setUserId] = useState(null);
+  const [documentId, setDocumentId] = useState(null);
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const data = await getUserData();
-        console.log('Fetched user data:', data);
-        setWaterIntake(data.waterIntake);
+        //console.log('Fetched user data:', data);
+        setWaterIntake(data.documents[0].waterIntake);
+        setUserId(data.documents[0].userId);
       } catch (error) {
         Alert.alert('Error', `Failed to load data: ${error.message}`);
       } finally {
@@ -58,6 +59,29 @@ const Home = () => {
     fetchUserData();
   }, []);
 
+
+  useEffect(() => {
+    if (usersId) {
+      ensureDocumentExists(usersId)
+        .then((document) => {
+          console.log('Document ensured:', document);
+          
+          // Extract the buttons from the document
+          const buttonsData = document.buttons ? document.buttons.map(button => JSON.parse(button)) : [];
+  
+          // Update the state with parsed buttons data
+          setButtons(buttonsData);
+
+          setDocumentId(document.$id);
+         
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }
+  }, [usersId]);
+
+  console.log("buttons :",buttons)
   const handlePress = () => {
     console.log('Drink button pressed');
   };
@@ -70,11 +94,35 @@ const Home = () => {
     toggleAddModal(); // Open the AddModal
   };
 
-  const handleAddNewButton = (newButton) => {
-    setButtons((prevButtons) => [...prevButtons, newButton]); // Add new button to the state
-    
+  const handleAddNewButton = async (newButton) => {
+    try {
+      // Update the Appwrite document with the new button (waiting for it to complete)
+      await updateAppwriteDocument(newButton, documentId,buttons);
+  
+      // Once the document update is successful, update the buttons state
+      setButtons((prevButtons) => [...prevButtons, newButton]); // Add new button to the state
+    } catch (error) {
+      console.error("Error updating Appwrite document:", error);
+      // Optionally, handle errors (e.g., show an alert or log it)
+    }
   };
-  //console.log(buttons);
+
+  const handleDeleteButton = async (updatedData) => {
+    try {
+      // Update the Appwrite document with the updated buttons array
+      await deleteAppwriteDocument(updatedData, documentId);
+  
+      // Update the local state with the new buttons
+      setButtons(updatedData);
+  
+      // Close the modal
+      toggleDeleteModal();
+    } catch (error) {
+      console.error('Error deleting button:', error);
+    }
+  };
+  
+  console.log(usersId);
   return (
     <View style={styles.view}>
       <ImageBackground
@@ -143,7 +191,7 @@ const Home = () => {
         visible={deleteModalVisible}
         initialData={buttons}
         onClose={toggleDeleteModal}
-        onDelete={(updatedData) => setButtons(updatedData)}
+        onDelete={handleDeleteButton}
       />
               
             </View>
