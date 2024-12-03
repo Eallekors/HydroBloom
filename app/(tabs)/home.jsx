@@ -6,7 +6,7 @@ import Container from '../../components/Container'; // Import the Container comp
 import DeleteModal from '../../components/Modals/DeleteModal';
 import { BackHandler } from 'react-native';
 import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument } from '../../services/appWrite';
-
+import SpriteAnimation from '../../components/SpriteAnimation';
 const { height, width } = Dimensions.get('window'); // Get screen dimensions here
 
 const Home = () => {
@@ -197,6 +197,8 @@ const Home = () => {
             </View>
           )
         )}
+      <Image source={require('../../assets/images/initial_plant.png')}/>
+      <SpriteAnimation/>
       </ImageBackground>
     </View>
   );
