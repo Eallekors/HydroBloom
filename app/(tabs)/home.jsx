@@ -6,6 +6,7 @@ import Container from '../../components/Container'; // Import the Container comp
 import DeleteModal from '../../components/Modals/DeleteModal';
 import { BackHandler } from 'react-native';
 import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument } from '../../services/appWrite';
+import * as Notifications from 'expo-notifications';
 
 const { height, width } = Dimensions.get('window'); // Get screen dimensions here
 
@@ -122,6 +123,8 @@ const Home = () => {
     }
   };
   
+  
+
   console.log(usersId);
   return (
     <View style={styles.view}>
