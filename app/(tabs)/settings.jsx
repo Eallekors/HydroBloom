@@ -17,6 +17,24 @@ const Settings = () => {
     Notifications: null,
   });
 
+  const waterFacts = [
+    "Drinking water can help improve your focus and concentration.",
+    "Water makes up about 60% of your body weight.",
+    "Drinking water boosts your metabolism and helps with weight loss.",
+    "Drinking water helps maintain the balance of bodily fluids.",
+    "Drinking water is essential for healthy skin.",
+    "Your body loses water through breathing, sweating, and digestion.",
+    "Drinking water can help prevent headaches and migraines.",
+    "Water helps flush out toxins from your body.",
+    "Drinking water is good for your kidneys and liver.",
+    "Water helps regulate your body temperature."
+  ];
+
+  const getRandomFact = () => {
+    const randomIndex = Math.floor(Math.random() * waterFacts.length);
+    return waterFacts[randomIndex];
+  };
+
   const scheduleNotifications = async (intervalHours) => {
     const isTestMode = intervalHours === 2; // For testing, 2 hours selected will trigger notifications after 2 seconds
   
@@ -32,14 +50,49 @@ const Settings = () => {
     let trigger;
   
     if (isTestMode) {
-      trigger = { seconds: 5 }; // For testing, notifications will trigger after 2 seconds
+      trigger = { seconds: 5 }; // For testing, notifications will trigger after 5 seconds
     } else {
-      // Standard scheduling (every X hours)
-      trigger = {
-        hour: (new Date().getHours() + intervalHours) % 24,
-        minute: 0,
-        repeats: true,
-      };
+        switch (intervalHours) {
+          case 2:
+            // Schedule a notification once a day at a specific time (e.g., 9 AM)
+            trigger = {
+              hour: 12, // Change this to your desired hour
+              minute: 0,
+              repeats: true,
+            };
+            break;
+
+          case 4:
+            // Schedule two notifications per day, e.g., at 9 AM and 9 PM
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "HydroBloom Reminder",
+                body: `${getRandomFact()}`,
+                sound: true,
+              },
+              trigger: { hour: 12, minute: 0, repeats: true },
+            });
+
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "HydroBloom Reminder",
+                body: `${getRandomFact()}`,
+                sound: true,
+              },
+              trigger: { hour: 16, minute: 0, repeats: true }, // 9 PM
+            });
+            console.log("Scheduled two notifications: 9 AM and 9 PM");
+            return; // Skip the default scheduling for "Twice a day"
+            
+          default:
+            // Handle other cases if necessary
+            trigger = {
+              hour: (new Date().getHours() + intervalHours) % 24, // Default scheduling based on the intervalHours
+              minute: 0,
+              repeats: true,
+            };
+            break;
+        }
     }
   
     console.log('Triggering notification with this trigger:', trigger);
@@ -49,7 +102,7 @@ const Settings = () => {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "HydroBloom Reminder",
-          body: "It's time to track your water intake!",
+          body: `${getRandomFact()}`,
           sound: true,
         },
         trigger,
@@ -59,6 +112,7 @@ const Settings = () => {
       console.error('Error scheduling notification:', error);
     }
   };
+  
   
   
 
