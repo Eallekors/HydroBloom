@@ -6,6 +6,7 @@ import Container from '../../components/Container.jsx';
 import Header from '../../components/Header.jsx';
 import { account, checkForSettingsDocument, getUserData } from '../../services/appWrite';
 import { router } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 
 const Settings = () => {
   const [userId,setUserId] = useState(null)
@@ -16,16 +17,66 @@ const Settings = () => {
     Notifications: null,
   });
 
-  // Function to handle option selection
- /* const handleOptionSelect = (buttonTitle, selectedOption) => {
-    console.log(`Selected from ${buttonTitle}: ${selectedOption.title}`);
-    
-    // Update the selected option for the specific button
-    setSelectedOptions((prevState) => ({
-      ...prevState,
-      [buttonTitle]: selectedOption.title,  // Update the selected option for the specific button
-    }));
-  };*/
+  const scheduleNotifications = async (intervalHours) => {
+    const isTestMode = intervalHours === 2; // For testing, 2 hours selected will trigger notifications after 2 seconds
+  
+    if (intervalHours === 0) {
+      // Cancel all notifications if the user turns notifications OFF
+      await Notifications.cancelAllScheduledNotificationsAsync();
+      return;
+    }
+  
+    // Cancel any existing scheduled notifications
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  
+    let trigger;
+  
+    if (isTestMode) {
+      trigger = { seconds: 5 }; // For testing, notifications will trigger after 2 seconds
+    } else {
+      // Standard scheduling (every X hours)
+      trigger = {
+        hour: (new Date().getHours() + intervalHours) % 24,
+        minute: 0,
+        repeats: true,
+      };
+    }
+  
+    console.log('Triggering notification with this trigger:', trigger);
+  
+    // Schedule the notification
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "HydroBloom Reminder",
+          body: "It's time to track your water intake!",
+          sound: true,
+        },
+        trigger,
+      });
+      console.log('Notification scheduled successfully!');
+    } catch (error) {
+      console.error('Error scheduling notification:', error);
+    }
+  };
+  
+  
+
+  const checkNotificationPermissions = async () => {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status === 'granted') {
+      console.log('Notifications are enabled');
+    } else if (status === 'denied') {
+      console.log('Notifications are denied');
+    } else if (status === 'undetermined') {
+      console.log('Notification permission is undetermined');
+    }
+  };
+  
+  useEffect(() => {
+    checkNotificationPermissions();
+  }, []);
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -41,10 +92,11 @@ const Settings = () => {
 
     fetchUserData();
   }, []);
-  console.log('UserID: ',userId)
-  const handleOptionSelect = async (buttonTitle, selectedOption) => {
-    console.log(`Selected from ${buttonTitle}: ${selectedOption.title}`);
+
   
+
+  const handleOptionSelect = async (buttonTitle, selectedOption) => {
+   
     // Update the selected option for the specific button
     setSelectedOptions((prevState) => {
       const newOptions = {
@@ -52,12 +104,16 @@ const Settings = () => {
         [buttonTitle]: selectedOption.title,
       };
   
-      
+      if (buttonTitle === "Notifications") {
+        const intervalHours = notifItems.find(item => item.title === selectedOption.title)?.value || 0;
+        scheduleNotifications(intervalHours); // Call the scheduling function
+      }
+
       // Ensure the document exists and then update it
       checkForSettingsDocument(userId, newOptions)
         .then((existingDocument) => {
           // You can also update the document here if needed
-          console.log("Existing document:", existingDocument);
+          console.log("Document exists");
           // Optionally, you can update this document with the new settings if needed
           // Update the existing document logic can be added here
         })
@@ -82,10 +138,9 @@ const Settings = () => {
   ];
 
   const notifItems = [
-    { title: 'OFF' },
-    { title: 'Every 2 hours' },
-    { title: 'Every 4 hours' },
-    { title: 'Every 6 hours' }
+     { title: 'OFF', value: 0.1 },
+  { title: 'Once a day', value: 2 },
+  { title: 'Twice a day', value: 4 },
   ];
 
   // Log out function
