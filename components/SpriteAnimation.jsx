@@ -9,7 +9,7 @@ const SpriteAnimation = () => {
   const SPRITE_WIDTH = 32; // Width of each frame
   const SPRITE_HEIGHT = 32; // Height of each frame
   const FRAMES = 5; // Total frames
-  const DURATION = 1000; // Total duration in milliseconds
+  const DURATION = 2000; // Total duration in milliseconds
 
   // Start the animation only once
   useEffect(() => {

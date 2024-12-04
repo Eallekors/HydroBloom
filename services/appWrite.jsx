@@ -6,7 +6,8 @@ export const appwriteConfig = {
   projectId: "66f95858003215b653db",
   databaseId: "673c58c60017ad6cca00",
   personalDataCollectionId: "673c59070032c19adaec",
-  buttonsCollectionId: "674963ff00254cb063b3"
+  buttonsCollectionId: "674963ff00254cb063b3",
+  StatisticsCollectionId: "67498ad9003231cda4e5"
 };
 
 // Initialize Appwrite client and services
@@ -251,6 +252,11 @@ export const deleteAppwriteDocument = async (newButtons, documentId) => {
     console.error("Error deleting document:", error); // Log the error
   }
 };
+
+export const waterIntakeManager = async (userId, currentAmount, waterIntakeGoal) => {
+ 
+};
+
 
 
 export { client, account, databases, ID };
