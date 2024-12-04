@@ -6,7 +6,8 @@ export const appwriteConfig = {
   projectId: "66f95858003215b653db",
   databaseId: "673c58c60017ad6cca00",
   personalDataCollectionId: "673c59070032c19adaec",
-  buttonsCollectionId: "674963ff00254cb063b3"
+  buttonsCollectionId: "674963ff00254cb063b3",
+  settingsCollectionId: "674987df001d31801b89"
 };
 
 // Initialize Appwrite client and services
@@ -249,6 +250,51 @@ export const deleteAppwriteDocument = async (newButtons, documentId) => {
     console.log("Button deleted successfully:", response); // Log success response
   } catch (error) {
     console.error("Error deleting document:", error); // Log the error
+  }
+};
+
+
+export const checkForSettingsDocument = async (userId, newOptions) => {
+  try {
+   
+
+    // Flatten the newOptions for storing
+    const flattenedOptions = {
+      units: newOptions.Units || null,
+      clockFormat: newOptions["Clock format"] || null,
+      notifications: newOptions.Notifications || null,
+    };
+
+    // Check if the document exists
+    const response = await databases.listDocuments(appwriteConfig.databaseId,
+      appwriteConfig.settingsCollectionId,[Query.equal('userId', userId)]);
+
+    if (response.total > 0) {
+      // Update existing document
+      const documentId = response.documents[0].$id;
+      const updatedDocument = await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.settingsCollectionId,
+        documentId,
+        flattenedOptions
+      );
+      return updatedDocument;
+    } else {
+      // Create a new document
+      const newDocument = await databases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.settingsCollectionId,
+        ID.unique(),
+        {
+          userId,
+          ...flattenedOptions,
+        }
+      );
+      return newDocument;
+    }
+  } catch (error) {
+    console.error('Error in checkForSettingsDocument:', error);
+    throw error;
   }
 };
 

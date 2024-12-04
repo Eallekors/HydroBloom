@@ -1,13 +1,14 @@
 import { Text, View, StyleSheet, Alert, ScrollView } from 'react-native';
 import IconButton from "../../components/IconButton.jsx";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import Container from '../../components/Container.jsx';
 import Header from '../../components/Header.jsx';
-import { account } from '../../services/appWrite';
+import { account, checkForSettingsDocument, getUserData } from '../../services/appWrite';
 import { router } from 'expo-router';
 
 const Settings = () => {
+  const [userId,setUserId] = useState(null)
   // Define a state to hold the selected option for each button by title
   const [selectedOptions, setSelectedOptions] = useState({
     Units: null,
@@ -16,7 +17,7 @@ const Settings = () => {
   });
 
   // Function to handle option selection
-  const handleOptionSelect = (buttonTitle, selectedOption) => {
+ /* const handleOptionSelect = (buttonTitle, selectedOption) => {
     console.log(`Selected from ${buttonTitle}: ${selectedOption.title}`);
     
     // Update the selected option for the specific button
@@ -24,7 +25,50 @@ const Settings = () => {
       ...prevState,
       [buttonTitle]: selectedOption.title,  // Update the selected option for the specific button
     }));
+  };*/
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const data = await getUserData();
+        //console.log('Fetched user data:', data);
+        setUserId(data.documents[0].userId);
+        
+      } catch (error) {
+        Alert.alert('Error', `Failed to load data: ${error.message}`);
+      } 
+    };
+
+    fetchUserData();
+  }, []);
+  console.log('UserID: ',userId)
+  const handleOptionSelect = async (buttonTitle, selectedOption) => {
+    console.log(`Selected from ${buttonTitle}: ${selectedOption.title}`);
+  
+    // Update the selected option for the specific button
+    setSelectedOptions((prevState) => {
+      const newOptions = {
+        ...prevState,
+        [buttonTitle]: selectedOption.title,
+      };
+  
+      
+      // Ensure the document exists and then update it
+      checkForSettingsDocument(userId, newOptions)
+        .then((existingDocument) => {
+          // You can also update the document here if needed
+          console.log("Existing document:", existingDocument);
+          // Optionally, you can update this document with the new settings if needed
+          // Update the existing document logic can be added here
+        })
+        .catch((error) => {
+          console.error("Error ensuring document exists or updating:", error);
+        });
+  
+      return newOptions;
+    });
   };
+  
   console.log(selectedOptions)
   // Define the dropdown items for each button
   const unitItems = [
