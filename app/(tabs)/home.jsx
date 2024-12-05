@@ -113,7 +113,7 @@ const Home = () => {
     }
    // Call the waterIntakeManager function to update the Appwrite database
    try {
-    const updatedDocument = await waterIntakeManager(usersId, currentIntakeState+500, waterIntake);
+    const updatedDocument = await waterIntakeManager(usersId, currentIntake, waterIntake);
     console.log('Water intake data updated successfully:', updatedDocument.history);
   } catch (error) {
     console.error('Error updating water intake data:', error);
