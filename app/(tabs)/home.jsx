@@ -8,9 +8,12 @@ import { BackHandler } from 'react-native';
 import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument, waterIntakeManager } from '../../services/appWrite';
 import SpriteAnimation from '../../components/SpriteAnimation';
 import * as Notifications from 'expo-notifications';
+import * as Font from 'expo-font';
+import { useFonts } from 'expo-font';
 import Cloud from '../../components/Cloud';
 
 const { height, width } = Dimensions.get('window'); // Get screen dimensions here
+
 
 const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -31,7 +34,12 @@ const Home = () => {
   const groundWidth = 50; // Set the width of one tile
   const numberOfTiles = Math.ceil(width / groundWidth); // Calculate the number of tiles needed to cover the screen
 
-
+  const [fontsLoaded] = useFonts({
+    'text': require('../../assets/fonts/text.ttf'),
+  });
+  const [fontsLoaded2] = useFonts({
+    'ka1': require('../../assets/fonts/ka1.ttf'),
+  });
 
   // Handle hardware back press to prevent going back
   useEffect(() => {
@@ -323,11 +331,13 @@ const styles = StyleSheet.create({
     paddingBottom: 10
   },
   label: {
-    fontSize: 20,
+    fontFamily: 'ka1',
+    fontSize: 17,
     color: '#000',
-    fontWeight: 'bold'
+   
   },
   circle: {
+    
     width: 80,
     height: 30,
     borderRadius: 25,
@@ -336,9 +346,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   value: {
-    fontSize: 18,
+    fontSize: 21,
     fontWeight: 'bold',
     color: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cloudImage: {
     alignSelf: "center"
