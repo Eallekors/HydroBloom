@@ -53,13 +53,19 @@ const Cloud = ({ currentIntakeState, waterIntake }) => {
       {/* Text above the cloud */}
       <View style={styles.textContainer}>
         <Text style={styles.text}>Daily Goal: {waterIntake} ml</Text>
+       
+        
         <View style={styles.divider} />
+       
         <Text style={styles.text}>
           {currentIntakeState < waterIntake 
             ? `${waterIntake - currentIntakeState} ml to go` 
             : 'Goal reached!'}
         </Text>
-      </View>
+        </View>
+         {/*
+        */}
+  
 
       {/* Cloud Image */}
       <View style={styles.imageContainer}>
@@ -117,11 +123,19 @@ const styles = StyleSheet.create({
   textContainer: {
     alignItems: 'center',
     marginBottom: 10, // Space between text and cloud
+    backgroundColor: '#ffffff',
+    padding:10,
+    top: -90,
+    borderRadius: 25,
+    height: 'auto',
+    width: 'auto',
+    elevation: 5
   },
   text: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 23,
+    fontFamily: 'ka1',
+    color: '#000',
+    backgroundColor: 'white',
   },
   divider: {
     height: 1,
