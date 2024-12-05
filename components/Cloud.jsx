@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, Animated, Dimensions } from 'react-native';
+const { width,height } = Dimensions.get('window'); // Get screen width
 
-const Cloud = ({ currentIntakeState, waterIntake }) => {
+const Cloud = ({ currentIntakeState, waterIntake, onGoalReached }) => {
   const percentage = Math.min((currentIntakeState / waterIntake) * 100, 100); // Clamp percentage to 100
-  const { width } = Dimensions.get('window'); // Get screen width
+  
   const raindrops = Array.from({ length: 30 }, () => useRef(new Animated.Value(0)).current); // Create 30 raindrops
 
   // Start animation for a single raindrop
@@ -35,6 +36,13 @@ const Cloud = ({ currentIntakeState, waterIntake }) => {
     }
   }, [percentage]);
 
+
+  useEffect(() => {
+    if (percentage === 100 && onGoalReached) {
+      onGoalReached(); // Trigger the callback
+    }
+  }, [percentage, onGoalReached]); // Run effect when percentage or callback changes
+
   // Select the cloud image based on the percentage
   const getCloudImage = () => {
     if (percentage === 0) {
@@ -50,22 +58,8 @@ const Cloud = ({ currentIntakeState, waterIntake }) => {
 
   return (
     <View style={styles.container}>
-      {/* Text above the cloud */}
-      <View style={styles.textContainer}>
-        <Text style={styles.text}>Daily Goal: {waterIntake} ml</Text>
-       
-        
-        <View style={styles.divider} />
-       
-        <Text style={styles.text}>
-          {currentIntakeState < waterIntake 
-            ? `${waterIntake - currentIntakeState} ml to go` 
-            : 'Goal reached!'}
-        </Text>
-        </View>
-         {/*
-        */}
   
+        
 
       {/* Cloud Image */}
       <View style={styles.imageContainer}>
@@ -75,6 +69,7 @@ const Cloud = ({ currentIntakeState, waterIntake }) => {
         <Text style={styles.overlayText}>
           {Math.round(percentage)}%
         </Text>
+    
 
         {/* Rain Animation */}
         {percentage === 100 &&
@@ -110,6 +105,18 @@ const Cloud = ({ currentIntakeState, waterIntake }) => {
             );
           })}
       </View>
+      <View style={styles.textContainer}>
+          <Text style={styles.text}>Daily Goal: {waterIntake} ml</Text>
+        
+          
+          <View style={styles.divider} />
+        
+          <Text style={styles.text}>
+            {currentIntakeState < waterIntake 
+              ? `${waterIntake - currentIntakeState} ml to go` 
+              : 'Goal reached!'}
+          </Text>
+      </View>
     </View>
   );
 };
@@ -122,10 +129,9 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 10, // Space between text and cloud
+    marginBottom: 100, // Space between text and cloud
     backgroundColor: '#ffffff',
-    padding:10,
-    top: -90,
+    padding: 10,
     borderRadius: 25,
     height: 'auto',
     width: 'auto',
@@ -138,8 +144,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   divider: {
-    height: 1,
-    width: 80,
+    height: 3,
+    width: 250,
     backgroundColor: '#ddd',
     marginVertical: 5,
   },

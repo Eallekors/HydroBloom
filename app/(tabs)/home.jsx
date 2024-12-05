@@ -7,7 +7,6 @@ import DeleteModal from '../../components/Modals/DeleteModal';
 import { BackHandler } from 'react-native';
 import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument, waterIntakeManager } from '../../services/appWrite';
 import SpriteAnimation from '../../components/SpriteAnimation';
-import * as Notifications from 'expo-notifications';
 import * as Font from 'expo-font';
 import { useFonts } from 'expo-font';
 import Cloud from '../../components/Cloud';
@@ -26,6 +25,9 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [usersId, setUserId] = useState(null);
   const [documentId, setDocumentId] = useState(null);
+  const [goalReached, setGoalReached] = useState(false);
+  const [plantheight, setPlantHeight] = useState(0.5);
+  const [daySteak, setDaySteak] = useState(0);
 
   const toggleModal = () => setModalVisible(!modalVisible);
   const toggleAddModal = () => setAddModalVisible(!addModalVisible);
@@ -133,7 +135,14 @@ const Home = () => {
   };
   console.log("Current water intake: ",currentIntakeState)
   
-
+  const handleGoalReached = () => {
+    if (!goalReached) {
+      console.log('Goal has been reached!');
+      setPlantHeight((prevHeight) => prevHeight + 1);
+      setDaySteak((daySteak) => daySteak + 1);
+      setGoalReached(true);
+  }
+  };
 
   const deleteButton = () => {
     toggleDeleteModal(); // Open the DeleteModal
@@ -190,14 +199,14 @@ const Home = () => {
                   <Text style={styles.label}>Total Height:</Text>
                   <View style={styles.circle}>
                     {/* placeholder value*/}
-                    <Text style={styles.value}>5 m</Text>
+                    <Text style={styles.value}>{plantheight} m</Text>
                   </View>
                 </View>
                 <View style={styles.row}>
                   <Text style={styles.label}>Day Streak:</Text>
                   <View style={styles.circle}>
                     {/* placeholder value*/}
-                    <Text style={styles.value}>0</Text>
+                    <Text style={styles.value}>{daySteak}</Text>
                   </View>
                 </View>
               </View>
@@ -210,7 +219,7 @@ const Home = () => {
                 <Text style={styles.overlayText}>
                   {currentIntakeState > 0 ? `${Math.round((currentIntakeState / waterIntake) * 100)}%` : '0%'}
                 </Text>*/}
-                  <Cloud style={styles.cloud} currentIntakeState={currentIntakeState} waterIntake={waterIntake} />
+                  <Cloud style={styles.cloud} currentIntakeState={currentIntakeState} waterIntake={waterIntake}  onGoalReached={handleGoalReached}/>
     
               </View>
 
@@ -249,8 +258,15 @@ const Home = () => {
           )
         )}
         <View style={styles.imageWrapper}>
-          <Image source={require('../../assets/images/initial_plant.png')} style={styles.image} />
-          <View style={styles.groundWrapper}>
+        {goalReached ? (
+            // Render the alternate content when the goal is reached
+            <View style={styles.animationContainer}>
+              <SpriteAnimation style={styles.spriteAnimation} />
+            </View>
+          ) : (
+            // Render the plant image when the goal is not yet reached
+            <Image source={require('../../assets/images/initial_plant.png')} style={styles.image} />
+          )}<View style={styles.groundWrapper}>
             {Array.from({ length: numberOfTiles }).map((_, index) => (
               <Image
                 key={index}
@@ -386,21 +402,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center', // Centers vertically within the wrapper (if needed)
     zIndex: 0,            // Ensures it's above other elements
   },
+  animationContainer: {
+    alignItems: 'center', // Centers the sprite animation horizontally
+    justifyContent: 'center', // Centers the sprite animation vertically
+    width: 200, // Match this to the expected dimensions of the sprite animation
+    height: 245, // Match this to the expected dimensions of the sprite animation
+    position: 'absolute', // Optional: allows exact positioning
+    bottom: 0, // Aligns with the bottom, similar to the static plant
+  },
   image: {
     width: 200,           // Width of the image
     height: 200,          // Height of the image
     resizeMode: 'contain', // Ensures the image stays within its bounds
   },
   groundWrapper: {
-    
     bottom: 0,
     flexDirection: 'row',
     width: '100%',
-   
-  },
-  groundImage: {
-    
-  
   },
   imageContainer: {
     flex: 1,  // Ensures the container takes up full height and width

@@ -44,11 +44,7 @@ const SpriteAnimation = () => {
 
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+ 
   spriteContainer: {
     width: 32, // Match SPRITE_WIDTH
     height: 32, // Match SPRITE_HEIGHT
