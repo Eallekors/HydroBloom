@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimensions, ActivityIndicator, Pressable } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimensions, ActivityIndicator, Pressable, Alert } from 'react-native';
 import SelectableModal from '../../components/Modals/Modal';
 import AddWaterModal from '../../components/Modals/AddModal';
 import Container from '../../components/Container'; // Import the Container component
@@ -76,28 +76,57 @@ const Home = () => {
     fetchUserData();
   }, []);
 
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const intake = getIntakeAmount(usersId);
-        console.log('Stats:', intake);
+        const intake = await getIntakeAmount(usersId);
+        console.log('Stats:', intake);  // Logs the whole intake data
+        
+        // Check if there is a document and history available
+        if (intake.documents && intake.documents.length > 0) {
+          const document = intake.documents[0];  // Get the first document
+          
+          // Check if history exists within the document
+          if (document.history) {
+            // Parse the JSON strings in the history array
+            const parsedHistory = document.history.map(item => JSON.parse(item));
+            
+            // Get today's date in 'YYYY-MM-DD' format
+            const today = new Date().toISOString().split('T')[0];  // e.g., '2024-12-05'
+  
+            // Find the history entry for today's date
+            const todayEntry = parsedHistory.find(entry => entry.day === today);
+            
+            if (todayEntry) {
+              console.log('Today\'s Entry:', todayEntry.dayAmount);
+              setCurrentIntake(todayEntry.dayAmount)
+            } else {
+              console.log('No entry found for today.');
+            }
+          } else {
+            console.log('No history available for this user.');
+          }
+        }
         
       } catch (error) {
-        Alert.alert('Error', `Failed to load data: ${error.message}`);
+        
       } finally {
         setIsLoading(false);
       }
     };
+  
     fetchData();
-    
   }, [usersId]);
-
+  
+  
 
   useEffect(() => {
     if (usersId) {
       ensureDocumentExists(usersId)
         .then((document) => {
-          console.log('Document ensured:', document);
+          console.log('Buttons list exists');
           
           // Extract the buttons from the document
           const buttonsData = document.buttons ? document.buttons.map(button => JSON.parse(button)) : [];

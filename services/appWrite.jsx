@@ -254,8 +254,6 @@ export const deleteAppwriteDocument = async (newButtons, documentId) => {
   }
 };
 
-
-
 export const waterIntakeManager = async (userId, currentIntake, intakeGoal) => {
   try {
     const today = new Date().toISOString().split("T")[0]; // Current date (YYYY-MM-DD)
