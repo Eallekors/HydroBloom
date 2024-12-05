@@ -388,5 +388,13 @@ export const getSettings = async (userId) => {
   return response; // Ensure the response is returned
 };
 
+export const getIntakeAmount = async (userId) => {
+  const response = await databases.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.StatisticsCollectionId,
+    [Query.equal('userId', userId)]
+  );
+  return response; // Ensure the response is returned
+}
 
 export { client, account, databases, ID };

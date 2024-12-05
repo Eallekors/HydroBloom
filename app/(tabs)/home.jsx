@@ -5,7 +5,7 @@ import AddWaterModal from '../../components/Modals/AddModal';
 import Container from '../../components/Container'; // Import the Container component
 import DeleteModal from '../../components/Modals/DeleteModal';
 import { BackHandler } from 'react-native';
-import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument, waterIntakeManager } from '../../services/appWrite';
+import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument, waterIntakeManager, getIntakeAmount } from '../../services/appWrite';
 import SpriteAnimation from '../../components/SpriteAnimation';
 import * as Font from 'expo-font';
 import { useFonts } from 'expo-font';
@@ -21,7 +21,7 @@ const Home = () => {
   const [buttons, setButtons] = useState([]); // Initialize state with imported data
   const [selectedButton, setSelectedButton] = useState(null);
   const [waterIntake, setWaterIntake] = useState(null);
-  const [currentIntakeState, setCurrentIntake] = useState(0); 
+  const [currentIntakeState, setCurrentIntake] = useState(0); // Todays intake amount
   const [isLoading, setIsLoading] = useState(true);
   const [usersId, setUserId] = useState(null);
   const [documentId, setDocumentId] = useState(null);
@@ -75,6 +75,22 @@ const Home = () => {
 
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const intake = getIntakeAmount(usersId);
+        console.log('Stats:', intake);
+        
+      } catch (error) {
+        Alert.alert('Error', `Failed to load data: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+    
+  }, [usersId]);
 
 
   useEffect(() => {
