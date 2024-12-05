@@ -8,6 +8,7 @@ export const appwriteConfig = {
   personalDataCollectionId: "673c59070032c19adaec",
   buttonsCollectionId: "674963ff00254cb063b3",
   StatisticsCollectionId: "67498ad9003231cda4e5"
+  settingsCollectionId: "674987df001d31801b89"
 };
 
 // Initialize Appwrite client and services
@@ -254,6 +255,7 @@ export const deleteAppwriteDocument = async (newButtons, documentId) => {
 };
 
 
+
 export const waterIntakeManager = async (userId, currentIntake, intakeGoal) => {
   try {
     const today = new Date().toISOString().split("T")[0]; // Current date (YYYY-MM-DD)
@@ -328,6 +330,51 @@ export const waterIntakeManager = async (userId, currentIntake, intakeGoal) => {
     }
   } catch (error) {
     console.error("Error managing water intake:", error);
+     throw error;
+  }
+};
+    
+export const checkForSettingsDocument = async (userId, newOptions) => {
+  try {
+   
+
+    // Flatten the newOptions for storing
+    const flattenedOptions = {
+      units: newOptions.Units || null,
+      clockFormat: newOptions["Clock format"] || null,
+      notifications: newOptions.Notifications || null,
+    };
+
+    // Check if the document exists
+    const response = await databases.listDocuments(appwriteConfig.databaseId,
+      appwriteConfig.settingsCollectionId,[Query.equal('userId', userId)]);
+
+    if (response.total > 0) {
+      // Update existing document
+      const documentId = response.documents[0].$id;
+      const updatedDocument = await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.settingsCollectionId,
+        documentId,
+        flattenedOptions
+      );
+      return updatedDocument;
+    } else {
+      // Create a new document
+      const newDocument = await databases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.settingsCollectionId,
+        ID.unique(),
+        {
+          userId,
+          ...flattenedOptions,
+        }
+      );
+      return newDocument;
+    }
+  } catch (error) {
+    console.error('Error in checkForSettingsDocument:', error);
+
     throw error;
   }
 };

@@ -1,13 +1,15 @@
 import { Text, View, StyleSheet, Alert, ScrollView } from 'react-native';
 import IconButton from "../../components/IconButton.jsx";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import Container from '../../components/Container.jsx';
 import Header from '../../components/Header.jsx';
-import { account } from '../../services/appWrite';
+import { account, checkForSettingsDocument, getUserData } from '../../services/appWrite';
 import { router } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 
 const Settings = () => {
+  const [userId,setUserId] = useState(null)
   // Define a state to hold the selected option for each button by title
   const [selectedOptions, setSelectedOptions] = useState({
     Units: null,
@@ -15,16 +17,168 @@ const Settings = () => {
     Notifications: null,
   });
 
-  // Function to handle option selection
-  const handleOptionSelect = (buttonTitle, selectedOption) => {
-    console.log(`Selected from ${buttonTitle}: ${selectedOption.title}`);
-    
-    // Update the selected option for the specific button
-    setSelectedOptions((prevState) => ({
-      ...prevState,
-      [buttonTitle]: selectedOption.title,  // Update the selected option for the specific button
-    }));
+  const waterFacts = [
+    "Drinking water can help improve your focus and concentration.",
+    "Water makes up about 60% of your body weight.",
+    "Drinking water boosts your metabolism and helps with weight loss.",
+    "Drinking water helps maintain the balance of bodily fluids.",
+    "Drinking water is essential for healthy skin.",
+    "Your body loses water through breathing, sweating, and digestion.",
+    "Drinking water can help prevent headaches and migraines.",
+    "Water helps flush out toxins from your body.",
+    "Drinking water is good for your kidneys and liver.",
+    "Water helps regulate your body temperature."
+  ];
+
+  const getRandomFact = () => {
+    const randomIndex = Math.floor(Math.random() * waterFacts.length);
+    return waterFacts[randomIndex];
   };
+
+  const scheduleNotifications = async (intervalHours) => {
+    const isTestMode = intervalHours === 2; // For testing, 2 hours selected will trigger notifications after 2 seconds
+  
+    if (intervalHours === 0) {
+      // Cancel all notifications if the user turns notifications OFF
+      await Notifications.cancelAllScheduledNotificationsAsync();
+      return;
+    }
+  
+    // Cancel any existing scheduled notifications
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  
+    let trigger;
+  
+    if (isTestMode) {
+      trigger = { seconds: 5 }; // For testing, notifications will trigger after 5 seconds
+    } else {
+        switch (intervalHours) {
+          case 2:
+            // Schedule a notification once a day at a specific time (e.g., 9 AM)
+            trigger = {
+              hour: 12, // Change this to your desired hour
+              minute: 0,
+              repeats: true,
+            };
+            break;
+
+          case 4:
+            // Schedule two notifications per day, e.g., at 9 AM and 9 PM
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "HydroBloom Reminder",
+                body: `${getRandomFact()}`,
+                sound: true,
+              },
+              trigger: { hour: 12, minute: 0, repeats: true },
+            });
+
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "HydroBloom Reminder",
+                body: `${getRandomFact()}`,
+                sound: true,
+              },
+              trigger: { hour: 16, minute: 0, repeats: true }, // 9 PM
+            });
+            console.log("Scheduled two notifications: 9 AM and 9 PM");
+            return; // Skip the default scheduling for "Twice a day"
+            
+          default:
+            // Handle other cases if necessary
+            trigger = {
+              hour: (new Date().getHours() + intervalHours) % 24, // Default scheduling based on the intervalHours
+              minute: 0,
+              repeats: true,
+            };
+            break;
+        }
+    }
+  
+    console.log('Triggering notification with this trigger:', trigger);
+  
+    // Schedule the notification
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "HydroBloom Reminder",
+          body: `${getRandomFact()}`,
+          sound: true,
+        },
+        trigger,
+      });
+      console.log('Notification scheduled successfully!');
+    } catch (error) {
+      console.error('Error scheduling notification:', error);
+    }
+  };
+  
+  
+  
+
+  const checkNotificationPermissions = async () => {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status === 'granted') {
+      console.log('Notifications are enabled');
+    } else if (status === 'denied') {
+      console.log('Notifications are denied');
+    } else if (status === 'undetermined') {
+      console.log('Notification permission is undetermined');
+    }
+  };
+  
+  useEffect(() => {
+    checkNotificationPermissions();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const data = await getUserData();
+        //console.log('Fetched user data:', data);
+        setUserId(data.documents[0].userId);
+        
+      } catch (error) {
+        Alert.alert('Error', `Failed to load data: ${error.message}`);
+      } 
+    };
+
+    fetchUserData();
+  }, []);
+
+  
+
+  const handleOptionSelect = async (buttonTitle, selectedOption) => {
+   
+    // Update the selected option for the specific button
+    setSelectedOptions((prevState) => {
+      const newOptions = {
+        ...prevState,
+        [buttonTitle]: selectedOption.title,
+      };
+  
+      if (buttonTitle === "Notifications") {
+        const intervalHours = notifItems.find(item => item.title === selectedOption.title)?.value || 0;
+        scheduleNotifications(intervalHours); // Call the scheduling function
+      }
+
+      // Ensure the document exists and then update it
+      checkForSettingsDocument(userId, newOptions)
+        .then((existingDocument) => {
+          // You can also update the document here if needed
+          console.log("Document exists");
+          // Optionally, you can update this document with the new settings if needed
+          // Update the existing document logic can be added here
+        })
+        .catch((error) => {
+          console.error("Error ensuring document exists or updating:", error);
+        });
+  
+      return newOptions;
+    });
+  };
+  
   console.log(selectedOptions)
   // Define the dropdown items for each button
   const unitItems = [
@@ -38,10 +192,9 @@ const Settings = () => {
   ];
 
   const notifItems = [
-    { title: 'OFF' },
-    { title: 'Every 2 hours' },
-    { title: 'Every 4 hours' },
-    { title: 'Every 6 hours' }
+     { title: 'OFF', value: 0.1 },
+  { title: 'Once a day', value: 2 },
+  { title: 'Twice a day', value: 4 },
   ];
 
   // Log out function
