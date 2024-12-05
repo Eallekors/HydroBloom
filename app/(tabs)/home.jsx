@@ -5,8 +5,10 @@ import AddWaterModal from '../../components/Modals/AddModal';
 import Container from '../../components/Container'; // Import the Container component
 import DeleteModal from '../../components/Modals/DeleteModal';
 import { BackHandler } from 'react-native';
-import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument } from '../../services/appWrite';
+import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument, waterIntakeManager } from '../../services/appWrite';
+import SpriteAnimation from '../../components/SpriteAnimation';
 import * as Notifications from 'expo-notifications';
+
 
 const { height, width } = Dimensions.get('window'); // Get screen dimensions here
 
@@ -40,6 +42,7 @@ const Home = () => {
   }, []);
 
   const [waterIntake, setWaterIntake] = useState(null);
+  const [currentIntakeState, setCurrentIntake] = useState(0); 
   const [isLoading, setIsLoading] = useState(true);
   const [usersId, setUserId] = useState(null);
   const [documentId, setDocumentId] = useState(null);
@@ -82,10 +85,44 @@ const Home = () => {
     }
   }, [usersId]);
 
-  console.log("buttons :",buttons)
-  const handlePress = () => {
-    console.log('Drink button pressed');
+  
+  const handlePress = async (item) => {
+    // Set the selected button
+    setSelectedButton(item);
+  
+    // Convert the selected amount (e.g., "500ml") to a number (500)
+    const selectedAmount = parseInt(item.defaultSelected.replace('ml', ''), 10);
+  
+    // Get the current water intake from state (if tracking it in state)
+    let currentIntake = currentIntakeState;  // You should have currentIntakeState in your component state
+    
+    // Add selected amount to the current intake
+    currentIntake += selectedAmount;
+  
+    // Prevent exceeding the daily goal (waterIntake)
+    if (currentIntake > waterIntake) {
+      currentIntake = waterIntake;  // Ensure it doesn't exceed the goal
+    }
+  
+    // Update the state with the new intake value
+    setCurrentIntake(currentIntake);  // Set the new current intake value in state
+    
+    // Optionally, you could display a message when the goal is reached
+    if (currentIntake >= waterIntake) {
+      console.log('Daily water intake goal reached!');
+    }
+   // Call the waterIntakeManager function to update the Appwrite database
+   try {
+    const updatedDocument = await waterIntakeManager(usersId, currentIntakeState+500, waterIntake);
+    console.log('Water intake data updated successfully:', updatedDocument.history);
+  } catch (error) {
+    console.error('Error updating water intake data:', error);
+  }
+ 
   };
+  console.log("Current water intake: ",currentIntakeState)
+  
+
 
   const deleteButton = () => {
     toggleDeleteModal(); // Open the DeleteModal
@@ -123,15 +160,15 @@ const Home = () => {
     }
   };
   
-  
 
-  console.log(usersId);
   return (
+    
     <View style={styles.view}>
       <ImageBackground
-        source={require('../../assets/images/Home.png')}
+        source={require('../../assets/images/bg2.png')}
         style={styles.backgroundImage}
       >
+        
         {isLoading ? (
           <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
         ) : (
@@ -142,7 +179,7 @@ const Home = () => {
                   <Text style={styles.label}>Total Height:</Text>
                   <View style={styles.circle}>
                     {/* placeholder value*/}
-                    <Text style={styles.value}>25 m</Text>
+                    <Text style={styles.value}>5 m</Text>
                   </View>
                 </View>
                 <View style={styles.row}>
@@ -158,48 +195,59 @@ const Home = () => {
                   source={require('../../assets/images/Cloud.png')}
                   style={styles.cloudImage}
                 />
-                {/* placeholder percentage*/}
-                <Text style={styles.overlayText}>55%</Text>
+                {/* Display the calculated percentage */}
+                <Text style={styles.overlayText}>
+                  {currentIntakeState > 0 ? `${Math.round((currentIntakeState / waterIntake) * 100)}%` : '0%'}
+                </Text>
               </View>
+
               <Text style={styles.text}>
                 Daily Goal: {waterIntake} ml
               </Text>
+
               <View style={styles.divider} />
+
               <Text style={styles.text}>
-                xxx ml to go
+                {currentIntakeState < waterIntake 
+                  ? `${waterIntake - currentIntakeState} ml to go` 
+                  : 'Goal reached!'}
               </Text>
+
               
-                {/* Circle Button */}
-      <TouchableOpacity style={styles.drinkButton} onPress={toggleModal}>
-        <Image style={styles.icon} source={require('../../assets/icons/water-glass.png')} />
-      </TouchableOpacity>
+                  {/* Circle Button */}
+              <TouchableOpacity style={styles.drinkButton} onPress={toggleModal}>
+                <Image style={styles.icon} source={require('../../assets/icons/water-glass.png')} />
+              </TouchableOpacity>
+             
+              {/* Modals */}
+              <SelectableModal
+                visible={modalVisible}
+                data={buttons}
+                onClose={toggleModal}
+                onSelect={handlePress}
+                onAdd={addButton}
+                onDelete={deleteButton}
+              />
+              
+              <AddWaterModal
+                visible={addModalVisible}
+                onClose={toggleAddModal}
+                onSave={handleAddNewButton} // Pass handleAddNewButton to AddWaterModal to add a new button
+              />
 
-      {/* Modals */}
-      <SelectableModal
-        visible={modalVisible}
-        data={buttons}
-        onClose={toggleModal}
-        onSelect={(item) => setSelectedButton(item) }
-        onAdd={addButton}
-        onDelete={deleteButton}
-      />
-      
-      <AddWaterModal
-        visible={addModalVisible}
-        onClose={toggleAddModal}
-        onSave={handleAddNewButton} // Pass handleAddNewButton to AddWaterModal to add a new button
-      />
-
-      <DeleteModal
-        visible={deleteModalVisible}
-        initialData={buttons}
-        onClose={toggleDeleteModal}
-        onDelete={handleDeleteButton}
-      />
+              <DeleteModal
+                visible={deleteModalVisible}
+                initialData={buttons}
+                onClose={toggleDeleteModal}
+                onDelete={handleDeleteButton}
+              />
               
             </View>
           )
         )}
+        <View style={styles.imageWrapper}>
+          <Image source={require('../../assets/images/initial_plant.png')} style={styles.image} />
+        </View>
       </ImageBackground>
     </View>
   );
@@ -304,12 +352,27 @@ const styles = StyleSheet.create({
     // Inner shadow simulation
     borderWidth: 1,
     borderColor: '#E0E0E0',
+    zIndex: 1,
   },
   drinkIcon: {
     width: 32,
     height: 37,
     resizeMode: 'contain',
-  }
+  },
+  imageWrapper: {
+    position: 'absolute', // Positions the image absolutely
+    bottom: 0,            // Aligns it to the bottom of the screen
+    left: 0,              // Ensures the wrapper stretches across the screen
+    right: 0,             // Ensures the wrapper stretches across the screen
+    alignItems: 'center', // Centers the image horizontally
+    justifyContent: 'center', // Centers vertically within the wrapper (if needed)
+    zIndex: 0,            // Ensures it's above other elements
+  },
+  image: {
+    width: 200,           // Width of the image
+    height: 200,          // Height of the image
+    resizeMode: 'contain', // Ensures the image stays within its bounds
+  },
 });
 
 
