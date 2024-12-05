@@ -253,10 +253,84 @@ export const deleteAppwriteDocument = async (newButtons, documentId) => {
   }
 };
 
-export const waterIntakeManager = async (userId, currentAmount, waterIntakeGoal) => {
- 
-};
 
+export const waterIntakeManager = async (userId, currentIntake, intakeGoal) => {
+  try {
+    const today = new Date().toISOString().split("T")[0]; // Current date (YYYY-MM-DD)
+
+    // Query the collection for the user's document
+    const response = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.StatisticsCollectionId,
+      [Query.equal("userId", userId)]
+    );
+
+    if (response.total === 0) {
+      // No document found, create a new one
+      const newDocument = await databases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.StatisticsCollectionId,
+        ID.unique(),
+        {
+          userId: userId,
+          history: [
+            JSON.stringify({
+              day: today,
+              dayAmount: currentIntake,
+              dayGoal: intakeGoal,
+            }),
+          ], // Store as an array of JSON strings
+        }
+      );
+      console.log("New document created:", newDocument);
+      return newDocument;
+    } else {
+      // Document exists, update it
+     
+      const existingDocument = response.documents[0];
+      const dailyIntake = existingDocument.history.map((entry) =>
+        JSON.parse(entry)
+      ); // Parse JSON strings into objects
+
+      // Find today's entry
+      const todayEntryIndex = dailyIntake.findIndex(
+        (entry) => entry.day === today
+      );
+
+      if (todayEntryIndex !== -1) {
+        // Update the existing entry for today
+        dailyIntake[todayEntryIndex].dayAmount = currentIntake;
+        dailyIntake[todayEntryIndex].dayGoal = intakeGoal; // Update the goal if needed
+      } else {
+        // Add a new entry for today
+        dailyIntake.push({
+          day: today,
+          dayAmount: currentIntake,
+          dayGoal: intakeGoal,
+        });
+      }
+
+      // Convert back to array of JSON strings for storage
+      const dailyIntakeStrings = dailyIntake.map((entry) =>
+        JSON.stringify(entry)
+      );
+      console.log("Existing: ", existingDocument.$id)
+      // Update the document with the modified dailyIntake
+      const updatedDocument = await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.StatisticsCollectionId,
+        existingDocument.$id,
+        { history: dailyIntakeStrings }
+      );
+
+      console.log("Document updated:", updatedDocument);
+      return updatedDocument;
+    }
+  } catch (error) {
+    console.error("Error managing water intake:", error);
+    throw error;
+  }
+};
 
 
 export { client, account, databases, ID };
