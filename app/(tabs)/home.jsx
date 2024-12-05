@@ -214,17 +214,7 @@ const Home = () => {
     
               </View>
 
-              <Text style={styles.text}>
-                Daily Goal: {waterIntake} ml
-              </Text>
-
-              <View style={styles.divider} />
-
-              <Text style={styles.text}>
-                {currentIntakeState < waterIntake 
-                  ? `${waterIntake - currentIntakeState} ml to go` 
-                  : 'Goal reached!'}
-              </Text>
+              
 
               
                   {/* Circle Button */}

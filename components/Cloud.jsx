@@ -4,10 +4,10 @@ import { View, Text, Image, StyleSheet, Animated, Dimensions } from 'react-nativ
 const Cloud = ({ currentIntakeState, waterIntake }) => {
   const percentage = Math.min((currentIntakeState / waterIntake) * 100, 100); // Clamp percentage to 100
   const { width } = Dimensions.get('window'); // Get screen width
-  const raindrops = Array.from({ length: 30 }, () => useRef(new Animated.Value(0)).current); // Create 20 raindrops
+  const raindrops = Array.from({ length: 30 }, () => useRef(new Animated.Value(0)).current); // Create 30 raindrops
 
   // Start animation for a single raindrop
-  const startRaindropAnimation = (raindrop, delay, xPosition) => {
+  const startRaindropAnimation = (raindrop, delay) => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(raindrop, {
@@ -49,53 +49,86 @@ const Cloud = ({ currentIntakeState, waterIntake }) => {
   };
 
   return (
-    <View style={styles.imageContainer}>
-      {/* Dynamic Cloud Image */}
-      <Image source={getCloudImage()} style={styles.cloudImage} />
+    <View style={styles.container}>
+      {/* Text above the cloud */}
+      <View style={styles.textContainer}>
+        <Text style={styles.text}>Daily Goal: {waterIntake} ml</Text>
+        <View style={styles.divider} />
+        <Text style={styles.text}>
+          {currentIntakeState < waterIntake 
+            ? `${waterIntake - currentIntakeState} ml to go` 
+            : 'Goal reached!'}
+        </Text>
+      </View>
 
-      {/* Display Percentage */}
-      <Text style={styles.overlayText}>
-        {Math.round(percentage)}%
-      </Text>
+      {/* Cloud Image */}
+      <View style={styles.imageContainer}>
+        <Image source={getCloudImage()} style={styles.cloudImage} />
+        
+        {/* Display Percentage */}
+        <Text style={styles.overlayText}>
+          {Math.round(percentage)}%
+        </Text>
 
-      {/* Rain Animation */}
-      {percentage === 100 &&
-        raindrops.map((raindrop, index) => {
-          const randomXPosition = Math.random() * width/2; // Random horizontal position
-          return (
-            <Animated.View
-              key={index}
-              style={[
-                styles.rainDrop,
-                {
-                  transform: [
-                    {
-                      translateY: raindrop.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-60, 400], // Rain starts above the cloud and falls to 400px below
-                      }),
-                    },
-                    {
-                      translateX: raindrop.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [randomXPosition - 100, randomXPosition - 100], // Wind pushes raindrop left
-                      }),
-                    },
-                  ],
-                  opacity: raindrop.interpolate({
-                    inputRange: [0, 0.1, 1],
-                    outputRange: [0, 1, 1], // Rain fades in as it starts falling
-                  }),
-                },
-              ]}
-            />
-          );
-        })}
+        {/* Rain Animation */}
+        {percentage === 100 &&
+          raindrops.map((raindrop, index) => {
+            const randomXPosition = Math.random() * width / 2; // Random horizontal position
+            return (
+              <Animated.View
+                key={index}
+                style={[
+                  styles.rainDrop,
+                  {
+                    transform: [
+                      {
+                        translateY: raindrop.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [-60, 400], // Rain starts above the cloud and falls to 400px below
+                        }),
+                      },
+                      {
+                        translateX: raindrop.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [randomXPosition - 100, randomXPosition - 100], // Wind pushes raindrop left
+                        }),
+                      },
+                    ],
+                    opacity: raindrop.interpolate({
+                      inputRange: [0, 0.1, 1],
+                      outputRange: [0, 1, 1], // Rain fades in as it starts falling
+                    }),
+                  },
+                ]}
+              />
+            );
+          })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+  },
+  textContainer: {
+    alignItems: 'center',
+    marginBottom: 10, // Space between text and cloud
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  divider: {
+    height: 1,
+    width: 80,
+    backgroundColor: '#ddd',
+    marginVertical: 5,
+  },
   imageContainer: {
     position: 'relative',
     width: 200, // Adjust based on your image size
@@ -104,15 +137,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cloudImage: {
-    width: '100%',
-    height: '100%',
+    width: '140%',
+    height: '140%',
     resizeMode: 'contain',
   },
   overlayText: {
     position: 'absolute',
     color: '#ddd',
-    fontWeight: 'bold',
-    fontSize: 18,
+    fontFamily: 'text',
+    fontSize: 25,
     zIndex: 2,
   },
   rainDrop: {
