@@ -379,6 +379,17 @@ export const checkForSettingsDocument = async (userId, newOptions) => {
   }
 };
 
+
+export const getSettings = async (userId) => {
+  const response = await databases.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.settingsCollectionId,
+    [Query.equal('userId', userId)]
+  );
+  return response; // Ensure the response is returned
+};
+
+
 export async function getStatisticsData() {
   try {
     // Get the current user session
@@ -397,5 +408,6 @@ export async function getStatisticsData() {
     throw new Error('Failed to fetch statistics data');
   }
 }
+
 
 export { client, account, databases, ID };

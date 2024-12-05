@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, Text, View, Image, StyleSheet } from 'react-native';
 
-export default function IconButton({
-  title,
-  onPress,
-  icon,
-  style,
-  textStyle,
-  dropdownItems,
-  onOptionSelect,
-  defaultSelected // Added defaultSelected prop
-}) {
+export default function IconButton({title, onPress, icon, style, textStyle, dropdownItems, onOptionSelect, defaultSelected}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState({ title: defaultSelected, icon }); // Set initial state with defaultSelected
 
@@ -24,6 +15,7 @@ export default function IconButton({
     'data': require('../assets/icons/data.png'),
     // Add more icons as your data changes or expands
   };
+
   // Function to handle dropdown toggle, but only if dropdownItems exist
   const toggleDropdown = () => {
     if (dropdownItems && dropdownItems.length > 0) {
@@ -41,16 +33,15 @@ export default function IconButton({
     onOptionSelect(title, item); // Pass the button title and selected item to the parent
   };
 
-  // Optionally, you can use an effect to update the selectedOption when dropdownItems or defaultSelected change
+  // Use effect to update selectedOption when dropdownItems or defaultSelected changes
   useEffect(() => {
-    if (dropdownItems && dropdownItems.length > 0) {
+    if (dropdownItems && dropdownItems.length > 0 && defaultSelected) {
       const defaultItem = dropdownItems.find(item => item.title === defaultSelected);
       if (defaultItem) {
         setSelectedOption(defaultItem);
       }
     }
   }, [dropdownItems, defaultSelected]);
- 
 
   // Dynamically require the image based on the icon name passed
   const getIconSource = (iconName) => {
@@ -118,7 +109,6 @@ const styles = StyleSheet.create({
     elevation: 5,
     alignSelf: 'center',
     marginVertical: 5,
-    
   },
   dropButton: {
     flexDirection: 'row',
@@ -130,7 +120,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     elevation: 5,
     marginRight: 10,
-    
   },
   iconContainer: {
     backgroundColor: '#FFFFFF',
@@ -141,7 +130,6 @@ const styles = StyleSheet.create({
     width: 58,
     justifyContent: 'center',
     alignItems: 'center',
-    
   },
   icon: {
     width: '75%',
@@ -162,7 +150,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
-    
   },
   dropTextContainer: {
     backgroundColor: '#FFFFFF',
@@ -181,7 +168,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginTop: 10,
     marginBottom: 10,
-    
   },
   buttonText: {
     color: '#000',
@@ -198,5 +184,4 @@ const styles = StyleSheet.create({
   dropdownButton: {
     marginBottom: 5,
   },
-  
 });

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import Container from '../../components/Container.jsx';
 import Header from '../../components/Header.jsx';
-import { account, checkForSettingsDocument, getUserData } from '../../services/appWrite';
+import { account, checkForSettingsDocument, getUserData, getSettings } from '../../services/appWrite';
 import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 
@@ -12,10 +12,11 @@ const Settings = () => {
   const [userId,setUserId] = useState(null)
   // Define a state to hold the selected option for each button by title
   const [selectedOptions, setSelectedOptions] = useState({
-    Units: null,
-    "Clock format": null,
-    Notifications: null,
+    Units: "kg, ml",
+    "Clock format": "13:00",
+    Notifications: "Once a day",
   });
+  const [error, setError] = useState(null);
 
   const waterFacts = [
     "Drinking water can help improve your focus and concentration.",
@@ -113,9 +114,6 @@ const Settings = () => {
     }
   };
   
-  
-  
-
   const checkNotificationPermissions = async () => {
     const { status } = await Notifications.getPermissionsAsync();
     if (status === 'granted') {
@@ -147,7 +145,41 @@ const Settings = () => {
     fetchUserData();
   }, []);
 
-  
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!userId) {
+        console.log('userId is not available yet');
+        return; // Early return if userId is not available
+      }
+
+      try {
+        const response = await getSettings(userId);
+
+        // Check if documents exist and handle accordingly
+        if (!response.documents || response.documents.length === 0) {
+          console.log('No settings found for this user');
+          return; // Early return if no documents are found
+        }
+
+        // Assuming response.documents contains an array with the fetched settings
+        const settings = response.documents[0]; // Get the first document
+        console.log('Fetched Settings:', settings);
+       
+        // Set the selectedOptions state with the fetched values
+        setSelectedOptions({
+          Units: settings.units || null,
+          "Clock format": settings.clockFormat || null,
+          Notifications: settings.notifications || null,
+        });
+
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        setError(error);
+      }
+    };
+
+    fetchSettings(); // Call the async function when userId changes
+  }, [userId]); // Effect runs when userId changes
 
   const handleOptionSelect = async (buttonTitle, selectedOption) => {
    
@@ -167,14 +199,14 @@ const Settings = () => {
       checkForSettingsDocument(userId, newOptions)
         .then((existingDocument) => {
           // You can also update the document here if needed
-          console.log("Document exists");
+          console.log("Document exists", existingDocument);
           // Optionally, you can update this document with the new settings if needed
           // Update the existing document logic can be added here
         })
         .catch((error) => {
           console.error("Error ensuring document exists or updating:", error);
         });
-  
+      
       return newOptions;
     });
   };
@@ -228,7 +260,7 @@ const Settings = () => {
               icon='ruler'
               dropdownItems={unitItems}
               onOptionSelect={handleOptionSelect}
-              selectedOption={selectedOptions['Units']}  // Pass selected option for this button
+              defaultSelected={selectedOptions['Units']}  // Pass selected option for this button
             />
             <IconButton
               title="Clock format"
@@ -236,7 +268,7 @@ const Settings = () => {
               icon='clock'
               dropdownItems={clockItems}
               onOptionSelect={handleOptionSelect}
-              selectedOption={selectedOptions['Clock format']}  // Pass selected option for this button
+              defaultSelected={selectedOptions['Clock format']}  // Pass selected option for this button
             />
             <IconButton
               title="Notifications"
@@ -244,7 +276,7 @@ const Settings = () => {
               icon='notif'
               dropdownItems={notifItems}
               onOptionSelect={handleOptionSelect}
-              selectedOption={selectedOptions['Notifications']}  // Pass selected option for this button
+              defaultSelected={selectedOptions['Notifications']}  // Pass selected option for this button
             />
             <IconButton
               title="Personal Data"
