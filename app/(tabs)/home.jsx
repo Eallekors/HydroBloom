@@ -28,6 +28,8 @@ const Home = () => {
   const toggleAddModal = () => setAddModalVisible(!addModalVisible);
   const toggleDeleteModal = () => setDeleteModalVisible(!deleteModalVisible);
 
+  const groundWidth = 50; // Set the width of one tile
+  const numberOfTiles = Math.ceil(width / groundWidth); // Calculate the number of tiles needed to cover the screen
 
 
 
@@ -114,7 +116,7 @@ const Home = () => {
     }
    // Call the waterIntakeManager function to update the Appwrite database
    try {
-    const updatedDocument = await waterIntakeManager(usersId, currentIntakeState+500, waterIntake);
+    const updatedDocument = await waterIntakeManager(usersId, currentIntake, waterIntake);
     console.log('Water intake data updated successfully:', updatedDocument.history);
   } catch (error) {
     console.error('Error updating water intake data:', error);
@@ -250,6 +252,15 @@ const Home = () => {
         )}
         <View style={styles.imageWrapper}>
           <Image source={require('../../assets/images/initial_plant.png')} style={styles.image} />
+          <View style={styles.groundWrapper}>
+            {Array.from({ length: numberOfTiles }).map((_, index) => (
+              <Image
+                key={index}
+                source={require('../../assets/images/Ground.png')}
+                style={styles.groundImage}
+              />
+            ))}
+          </View> 
         </View>
       </ImageBackground>
     </View>
@@ -273,6 +284,7 @@ const styles = StyleSheet.create({
     // For Android shadow
     elevation: 10,
     marginBottom: 130,
+    justifyContent: 'center'
   },
   backgroundImage: {
     flex: 1,
@@ -313,6 +325,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 20,
     color: '#000',
+    fontWeight: 'bold'
   },
   circle: {
     width: 80,
@@ -375,6 +388,17 @@ const styles = StyleSheet.create({
     width: 200,           // Width of the image
     height: 200,          // Height of the image
     resizeMode: 'contain', // Ensures the image stays within its bounds
+  },
+  groundWrapper: {
+    
+    bottom: 0,
+    flexDirection: 'row',
+    width: '100%',
+   
+  },
+  groundImage: {
+    
+  
   },
   imageContainer: {
     flex: 1,  // Ensures the container takes up full height and width
