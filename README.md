@@ -4,15 +4,19 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## Get started
 
-1. Install dependencies
+1. Clone the project
+
+   ```bash
+   git clone git@github.com:Eallekors/HydroBloom.git
+   ```
+2. Go to the HydroBloom directory
+ ```bash
+    cd [your path to the directory]
+   ```
+2. Install dependencies
 
    ```bash
    npm install
-   ```
-2. Install appwrite
-
-   ```bash
-   npm install react-native-appwrite
    ```
 3. Start the app
 
