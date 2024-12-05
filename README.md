@@ -10,8 +10,9 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    git clone git@github.com:Eallekors/HydroBloom.git
    ```
 2. Go to the HydroBloom directory
- ```bash
-    cd [your path to the directory]
+
+   ```bash
+   cd [your path to the directory]
    ```
 2. Install dependencies
 
