@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimensions, ActivityIndicator, Pressable } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Image, ImageBackground, Dimensions, ActivityIndicator, Pressable, Alert } from 'react-native';
 import SelectableModal from '../../components/Modals/Modal';
 import AddWaterModal from '../../components/Modals/AddModal';
 import Container from '../../components/Container'; // Import the Container component
 import DeleteModal from '../../components/Modals/DeleteModal';
 import { BackHandler } from 'react-native';
-import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument, waterIntakeManager } from '../../services/appWrite';
+import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument, waterIntakeManager, getIntakeAmount } from '../../services/appWrite';
 import SpriteAnimation from '../../components/SpriteAnimation';
 import * as Font from 'expo-font';
 import { useFonts } from 'expo-font';
@@ -21,7 +21,7 @@ const Home = () => {
   const [buttons, setButtons] = useState([]); // Initialize state with imported data
   const [selectedButton, setSelectedButton] = useState(null);
   const [waterIntake, setWaterIntake] = useState(null);
-  const [currentIntakeState, setCurrentIntake] = useState(0); 
+  const [currentIntakeState, setCurrentIntake] = useState(0); // Todays intake amount
   const [isLoading, setIsLoading] = useState(true);
   const [usersId, setUserId] = useState(null);
   const [documentId, setDocumentId] = useState(null);
@@ -77,11 +77,56 @@ const Home = () => {
   }, []);
 
 
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const intake = await getIntakeAmount(usersId);
+        console.log('Stats:', intake);  // Logs the whole intake data
+        
+        // Check if there is a document and history available
+        if (intake.documents && intake.documents.length > 0) {
+          const document = intake.documents[0];  // Get the first document
+          
+          // Check if history exists within the document
+          if (document.history) {
+            // Parse the JSON strings in the history array
+            const parsedHistory = document.history.map(item => JSON.parse(item));
+            
+            // Get today's date in 'YYYY-MM-DD' format
+            const today = new Date().toISOString().split('T')[0];  // e.g., '2024-12-05'
+  
+            // Find the history entry for today's date
+            const todayEntry = parsedHistory.find(entry => entry.day === today);
+            
+            if (todayEntry) {
+              console.log('Today\'s Entry:', todayEntry.dayAmount);
+              setCurrentIntake(todayEntry.dayAmount)
+            } else {
+              console.log('No entry found for today.');
+            }
+          } else {
+            console.log('No history available for this user.');
+          }
+        }
+        
+      } catch (error) {
+        
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [usersId]);
+  
+  
+
   useEffect(() => {
     if (usersId) {
       ensureDocumentExists(usersId)
         .then((document) => {
-          console.log('Document ensured:', document);
+          console.log('Buttons list exists');
           
           // Extract the buttons from the document
           const buttonsData = document.buttons ? document.buttons.map(button => JSON.parse(button)) : [];
