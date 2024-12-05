@@ -54,10 +54,10 @@ export default function SignUpScreenData() {
   ];
 
   const activityOptions = [
-    { id: 1, label: "Sedentary", value: "sedentary" },
-    { id: 2, label: "Lightly active", value: "lightlyActive" },
-    { id: 3, label: "Moderately active", value: "moderatelyActive" },
-    { id: 4, label: "Very active", value: "veryActive" }
+    { id: 1, label: '<30 minutes of exercise per week', value: 'sedentary' },
+    { id: 2, label: '30–150 minutes of light exercise per week', value: 'lightlyActive' },
+    { id: 3, label: '150–300 minutes of moderate exercise per week', value: 'moderatelyActive' },
+    { id: 4, label: '300+ minutes of moderate to high-intensity exercise per week', value: 'veryActive' }
   ];
 
   const isFormValid = () => {
