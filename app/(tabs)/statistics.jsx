@@ -40,7 +40,7 @@ const Statistics = () => {
       const currentDate = new Date();
       const currentDay = currentDate.getDay();
       const startOfWeek = new Date(currentDate);
-      startOfWeek.setDate(currentDate.getDate() - currentDay + 1);
+      startOfWeek.setDate(currentDate.getDate() - currentDay);
   
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6); // set to Sunday
