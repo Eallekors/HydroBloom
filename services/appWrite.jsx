@@ -7,7 +7,7 @@ export const appwriteConfig = {
   databaseId: "673c58c60017ad6cca00",
   personalDataCollectionId: "673c59070032c19adaec",
   buttonsCollectionId: "674963ff00254cb063b3",
-  StatisticsCollectionId: "67498ad9003231cda4e5"
+  StatisticsCollectionId: "67498ad9003231cda4e5",
   settingsCollectionId: "674987df001d31801b89"
 };
 
