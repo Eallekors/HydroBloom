@@ -8,7 +8,7 @@ import { BackHandler } from 'react-native';
 import { deleteAppwriteDocument, ensureDocumentExists, getUserData, updateAppwriteDocument, waterIntakeManager } from '../../services/appWrite';
 import SpriteAnimation from '../../components/SpriteAnimation';
 import * as Notifications from 'expo-notifications';
-
+import Cloud from '../../components/Cloud';
 
 const { height, width } = Dimensions.get('window'); // Get screen dimensions here
 
@@ -18,6 +18,11 @@ const Home = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [buttons, setButtons] = useState([]); // Initialize state with imported data
   const [selectedButton, setSelectedButton] = useState(null);
+  const [waterIntake, setWaterIntake] = useState(null);
+  const [currentIntakeState, setCurrentIntake] = useState(0); 
+  const [isLoading, setIsLoading] = useState(true);
+  const [usersId, setUserId] = useState(null);
+  const [documentId, setDocumentId] = useState(null);
 
   const toggleModal = () => setModalVisible(!modalVisible);
   const toggleAddModal = () => setAddModalVisible(!addModalVisible);
@@ -41,11 +46,7 @@ const Home = () => {
     return () => backHandler.remove();
   }, []);
 
-  const [waterIntake, setWaterIntake] = useState(null);
-  const [currentIntakeState, setCurrentIntake] = useState(0); 
-  const [isLoading, setIsLoading] = useState(true);
-  const [usersId, setUserId] = useState(null);
-  const [documentId, setDocumentId] = useState(null);
+  //Fetches user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -191,14 +192,16 @@ const Home = () => {
                 </View>
               </View>
               <View style={styles.imageContainer}>
-                <Image
+                {/*<Image
                   source={require('../../assets/images/Cloud.png')}
                   style={styles.cloudImage}
                 />
-                {/* Display the calculated percentage */}
+               
                 <Text style={styles.overlayText}>
                   {currentIntakeState > 0 ? `${Math.round((currentIntakeState / waterIntake) * 100)}%` : '0%'}
-                </Text>
+                </Text>*/}
+                  <Cloud style={styles.cloud} currentIntakeState={currentIntakeState} waterIntake={waterIntake} />
+    
               </View>
 
               <Text style={styles.text}>
@@ -372,6 +375,21 @@ const styles = StyleSheet.create({
     width: 200,           // Width of the image
     height: 200,          // Height of the image
     resizeMode: 'contain', // Ensures the image stays within its bounds
+  },
+  imageContainer: {
+    flex: 1,  // Ensures the container takes up full height and width
+    justifyContent: 'center', // Vertically centers the cloud
+    alignItems: 'center', // Horizontally centers the cloud
+    position: 'absolute',  // Ensures it's over other content
+    top: 0,  // Optional: adjust positioning if needed
+    left: 0,  // Optional: adjust positioning if needed
+    right: 0, // Optional: adjust positioning if needed
+    bottom: 0, // Optional: adjust positioning if needed
+  },
+  cloud: {
+    width: 150, // Set the width of the cloud image
+    height: 150, // Set the height of the cloud image
+    resizeMode: 'contain', // Ensures the image scales appropriately
   },
 });
 
