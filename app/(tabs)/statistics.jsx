@@ -17,113 +17,88 @@ const Statistics = () => {
   });
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [noData, setNoData] = useState(false); // New state to track "No data" case
 
   // Fetch statistics data
   const fetchStatistics = async () => {
     try {
       setLoading(true);
-
+      setNoData(false); // Reset noData state on each fetch
+  
       // Fetch statistics data from AppWrite
       const stats = await getStatisticsData();
-    
-      // Log the response to inspect the structure
-      console.log('Fetched stats:', stats);
-    
-      if (stats.length > 0) {
-        const weekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
-        // Get current date and calculate the start of the week (Monday)
-        const currentDate = new Date();
-        const currentDay = currentDate.getDay();
-        const startOfWeek = new Date(currentDate);
-        startOfWeek.setDate(currentDate.getDate() - currentDay + 1);
-    
-        // Calculate the end of the week (Sunday)
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6); // set to Sunday
-    
-        // Create a dictionary of the last week's stats, mapping by day of the week
-        const statsByDay = stats.reduce((acc, stat) => {
-          stat.history.forEach((entry) => {
-            const parsedEntry = JSON.parse(entry); 
-    
-            // Extract the day and the corresponding amount
-            const statDate = new Date(parsedEntry.day);
-            const dayOfWeek = statDate.getDay();
-    
-            // Check if the date is within the current week (Mon-Sun)
-            if (statDate >= startOfWeek && statDate <= endOfWeek) {
-              if (isNaN(dayOfWeek)) {
-                console.error(`Invalid date: ${parsedEntry.day}`);
-                return; 
-              }
-    
-              // Convert dayAmount from ml to liters and map the value to the correct day
-              const dayAmount = parseFloat(parsedEntry.dayAmount) / 1000 || 0; 
-    
-              // Log each dayAmount to ensure correct mapping
-              console.log(`Day of week: ${dayOfWeek}, Amount: ${dayAmount}`);
-    
-              // Map the value to the correct index in the weekLabels array (Mon -> 0, Sun -> 6)
-              const correctedIndex = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
-    
-              // Store the amount for the specific day in the correct index
-              acc[correctedIndex] = dayAmount;
-            }
-          });
-    
-          return acc;
-        }, {});
-    
-        console.log('Stats by Day:', statsByDay);
-    
-        // Prepare chart data (only for the last 7 days of the current week)
-        const data = weekLabels.map((_, index) => statsByDay[index] || 0);
-    
-        // Log the final data that will be used in the chart
-        console.log('Chart data:', data);
-    
-        // Update the chart data
-        setChartData({
-          labels: weekLabels,
-          datasets: [{ data }],
-        });
-    
-        // Parse the history for display
-        const history = stats.flatMap((stat) => {
-          return stat.history.map((entry) => {
-            const parsedEntry = JSON.parse(entry);
-            console.log('History entry:', parsedEntry);
-        
-            const date = new Date(parsedEntry.day);
-            const formattedDate = date.toLocaleDateString('en-US', {
-              month: 'short',
-              day: '2-digit',
-            });
-        
-            return {
-              date: formattedDate,
-              intake: parsedEntry.dayAmount || 0,
-              percentage: Math.round((parsedEntry.dayAmount / parsedEntry.dayGoal) * 100) || 0,
-              rawDate: date,
-            };
-          });
-        });
-        
-        // Sort history by the rawDate (most recent first)
-        const sortedHistory = history.sort((a, b) => b.rawDate - a.rawDate); 
-        
-        // Update historyData state
-        setHistoryData(sortedHistory);
-      } else {
-        console.error('No statistics data found');
+  
+      if (!stats || stats.length === 0) {
+        setNoData(true); // Handle the case where no data is found
+        return; // Return early if no data is found, avoiding further processing
       }
+  
+      // Process the statistics data (rest of your logic)
+      const weekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  
+      // Get current date and calculate the start of the week (Monday)
+      const currentDate = new Date();
+      const currentDay = currentDate.getDay();
+      const startOfWeek = new Date(currentDate);
+      startOfWeek.setDate(currentDate.getDate() - currentDay + 1);
+  
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6); // set to Sunday
+  
+      // Create a dictionary of the last week's stats, mapping by day of the week
+      const statsByDay = stats.reduce((acc, stat) => {
+        stat.history.forEach((entry) => {
+          const parsedEntry = JSON.parse(entry);
+          const statDate = new Date(parsedEntry.day);
+          const dayOfWeek = statDate.getDay();
+  
+          if (statDate >= startOfWeek && statDate <= endOfWeek) {
+            const dayAmount = parseFloat(parsedEntry.dayAmount) / 1000 || 0;
+            const correctedIndex = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+            acc[correctedIndex] = dayAmount;
+          }
+        });
+  
+        return acc;
+      }, {});
+  
+      const data = weekLabels.map((_, index) => statsByDay[index] || 0);
+  
+      setChartData({
+        labels: weekLabels,
+        datasets: [{ data }],
+      });
+  
+      // Parse and set history data
+      const history = stats.flatMap((stat) => {
+        return stat.history.map((entry) => {
+          const parsedEntry = JSON.parse(entry);
+          const date = new Date(parsedEntry.day);
+          const formattedDate = date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+          });
+  
+          return {
+            date: formattedDate,
+            intake: parsedEntry.dayAmount || 0,
+            percentage: Math.round((parsedEntry.dayAmount / parsedEntry.dayGoal) * 100) || 0,
+            rawDate: date,
+          };
+        });
+      });
+  
+      const sortedHistory = history.sort((a, b) => b.rawDate - a.rawDate);
+      setHistoryData(sortedHistory);
+  
     } catch (error) {
       console.error('Error fetching statistics:', error);
+      setNoData(true); // Handle the error and prevent the app from crashing
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
+  
 
   // Fetch data every time the screen is focused
   useFocusEffect(
@@ -166,6 +141,8 @@ const Statistics = () => {
             {/* Show loading indicator when fetching data */}
             {loading ? (
               <ActivityIndicator size="large" color="#8A2BE2" />
+            ) : noData ? (
+              <Text style={styles.noDataText}>No statistics found</Text> // Display no data message
             ) : (
               <>
                 {/* Bar Chart */}
@@ -245,6 +222,13 @@ const styles = StyleSheet.create({
     flex: 0.5,
     textAlign: 'right',
     paddingRight: 30,
+  },
+  noDataText: {
+    fontSize: 18,
+    color: '#8A2BE2',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
